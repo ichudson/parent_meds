@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bill & Sue – Meds</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  :root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --shadow: 0 4px 24px rgba(0,0,0,0.10);
+    --radius: 20px;
+    --taken-bg: #e8f5e9;
+    --taken-border: #66bb6a;
+    --taken-text: #2e7d32;
+    --alert-bg: #fff3e0;
+    --alert-border: #ffa726;
+    --header-bg: #3a5f8a;
+    --font: 'Nunito', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: var(--font); background: var(--bg); }
+
+  /* LOGIN */
+  #login-screen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; gap: 22px;
+    background: linear-gradient(135deg, #3a5f8a 0%, #5b8ec4 100%);
+  }
+  #login-screen h1 { font-size: 2.2rem; font-weight: 900; color: #fff; }
+  #login-screen p { color: rgba(255,255,255,0.8); font-size: 1.05rem; }
+  #login-screen input {
+    font-family: var(--font); font-size: 1.6rem; padding: 16px 24px;
+    border-radius: 14px; border: none; outline: none; text-align: center;
+    width: 260px; letter-spacing: 8px; background: rgba(255,255,255,0.15); color: #fff;
+  }
+  #login-screen input::placeholder { letter-spacing: 2px; color: rgba(255,255,255,0.45); }
+  #login-btn {
+    font-family: var(--font); font-size: 1.2rem; font-weight: 800;
+    padding: 16px 48px; border-radius: 14px; border: none; cursor: pointer;
+    background: #fff; color: var(--header-bg); box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+  }
+  #login-btn:active { transform: scale(0.97); }
+  #login-error { color: #ffcdd2; font-size: 1rem; display: none; }
+
+  /* APP */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+
+  /* Header */
+  #header {
+    background: var(--header-bg); color: #fff;
+    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  #header-left h1 { font-size: 1.4rem; font-weight: 900; }
+  #header-date { font-size: 0.88rem; opacity: 0.75; margin-top: 1px; }
+  #header-right { display: flex; gap: 10px; }
+  .hdr-btn {
+    background: rgba(255,255,255,0.18); border: none; color: #fff;
+    border-radius: 9px; padding: 8px 13px; font-family: var(--font); font-size: 0.88rem;
+    cursor: pointer; font-weight: 700;
+  }
+  .hdr-btn:active { background: rgba(255,255,255,0.32); }
+
+  /* Main content – two columns on iPad */
+  #main {
+    flex: 1; padding: 18px 16px 36px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* Person column */
+  .person-col { display: flex; flex-direction: column; gap: 14px; }
+  .person-header {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--header-bg); color: #fff;
+    border-radius: 14px; padding: 14px 18px;
+  }
+  .person-avatar { font-size: 1.8rem; }
+  .person-name { font-size: 1.4rem; font-weight: 900; }
+
+  /* Pill card */
+  .pill-card {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    overflow: hidden; border: 2px solid transparent; transition: border-color 0.2s, background 0.2s;
+  }
+  .pill-card.taken { background: var(--taken-bg); border-color: var(--taken-border); }
+  .pill-card.overdue { background: var(--alert-bg); border-color: var(--alert-border);
+    animation: pulse-alert 1.8s ease-in-out infinite; }
+
+  @keyframes pulse-alert {
+    0%,100% { box-shadow: 0 4px 20px rgba(255,152,0,0.15); }
+    50%      { box-shadow: 0 4px 32px rgba(255,152,0,0.5); }
+  }
+
+  .pill-btn {
+    width: 100%; border: none; cursor: pointer; font-family: var(--font);
+    padding: 20px 18px; display: flex; align-items: center; gap: 14px;
+    background: transparent; text-align: left;
+  }
+  .pill-btn:active { opacity: 0.72; }
+
+  .pill-icon {
+    width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; color: #fff;
+  }
+
+  .pill-info { flex: 1; min-width: 0; }
+  .pill-name  { font-size: 1.25rem; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pill-dose  { font-size: 0.9rem; color: #666; margin-top: 2px; }
+  .pill-time  { font-size: 0.85rem; color: #999; margin-top: 2px; }
+  .pill-status{ font-size: 0.92rem; font-weight: 700; margin-top: 5px; }
+
+  .pill-card.taken .pill-name   { color: var(--taken-text); }
+  .pill-card.taken .pill-status { color: var(--taken-text); }
+  .pill-card.overdue .pill-name   { color: #e65100; }
+  .pill-card.overdue .pill-status { color: #bf360c; font-weight: 800; }
+
+  /* Undo strip */
+  .undo-strip {
+    border-top: 1px solid #e0ede0; padding: 8px 16px;
+    display: none; align-items: center; gap: 10px;
+  }
+  .pill-card.taken .undo-strip { display: flex; }
+  .undo-btn {
+    font-family: var(--font); font-size: 0.92rem; font-weight: 700;
+    background: #eee; color: #555; border: none;
+    border-radius: 8px; padding: 7px 16px; cursor: pointer;
+  }
+  .undo-btn:active { background: #ddd; }
+  .undo-info { font-size: 0.82rem; color: #aaa; }
+
+  /* Pill count mini-table inside column */
+  .counts-card {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .counts-card h4 {
+    background: #e8eef5; padding: 10px 16px; font-size: 0.95rem;
+    font-weight: 800; color: var(--header-bg);
+  }
+  .count-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 16px; border-bottom: 1px solid #f0f0f0; font-size: 0.92rem;
+  }
+  .count-row:last-child { border-bottom: none; }
+  .count-name { font-weight: 700; color: #333; }
+  .count-stock { color: #555; }
+  .count-low { color: #e65100; font-weight: 800; }
+
+  /* Slide-over panels (Log / Settings) */
+  .panel-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200;
+  }
+  .panel-overlay.open { display: block; }
+  .panel-drawer {
+    position: absolute; top: 0; right: 0; bottom: 0; width: min(520px, 94vw);
+    background: var(--bg); overflow-y: auto; padding: 24px 20px 40px;
+    box-shadow: -4px 0 32px rgba(0,0,0,0.18);
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .drawer-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
+  }
+  .drawer-title { font-size: 1.4rem; font-weight: 900; color: var(--header-bg); }
+  .drawer-close {
+    font-size: 1.6rem; background: none; border: none; cursor: pointer; color: #888; line-height: 1;
+  }
+
+  /* Settings form */
+  .settings-section {
+    background: #fff; border-radius: 16px; box-shadow: var(--shadow); padding: 20px;
+  }
+  .settings-section h3 {
+    font-size: 1.05rem; font-weight: 800; color: var(--header-bg);
+    border-bottom: 2px solid #e3eaf3; padding-bottom: 8px; margin-bottom: 14px;
+  }
+  .setting-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .setting-row label { font-size: 0.95rem; font-weight: 700; color: #444; min-width: 120px; }
+  .setting-row input {
+    font-family: var(--font); font-size: 0.95rem; padding: 9px 12px;
+    border-radius: 9px; border: 2px solid #dde4ef; flex: 1; min-width: 120px;
+    color: #333; background: #f7f9fc; outline: none;
+  }
+  .setting-row input:focus { border-color: var(--header-bg); }
+  .save-btn {
+    font-family: var(--font); font-size: 1rem; font-weight: 800;
+    background: var(--header-bg); color: #fff; border: none;
+    border-radius: 12px; padding: 12px 28px; cursor: pointer; margin-top: 4px;
+  }
+  .save-btn:active { opacity: 0.8; }
+
+  /* Log table */
+  .log-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
+  .log-table th { background: var(--header-bg); color: #fff; padding: 10px 12px; font-size: 0.9rem; text-align: left; }
+  .log-table td { padding: 9px 12px; font-size: 0.88rem; color: #444; border-bottom: 1px solid #f0f0f0; }
+  .log-table tr:last-child td { border-bottom: none; }
+  .log-taken { color: #2e7d32; font-weight: 700; }
+  .log-missed { color: #c62828; font-weight: 700; }
+  .clear-log-btn {
+    font-family: var(--font); font-size: 0.95rem; font-weight: 800;
+    background: #ffebee; color: #c62828; border: none;
+    border-radius: 10px; padding: 10px 20px; cursor: pointer;
+  }
+
+  /* Modal */
+  #modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 300; align-items: center; justify-content: center;
+  }
+  #modal-overlay.open { display: flex; }
+  #modal-box {
+    background: #fff; border-radius: 22px; padding: 34px 28px; max-width: 380px;
+    width: 88%; box-shadow: 0 12px 48px rgba(0,0,0,0.25); text-align: center;
+  }
+  #modal-icon  { font-size: 2.8rem; margin-bottom: 10px; }
+  #modal-title { font-size: 1.4rem; font-weight: 900; color: #222; margin-bottom: 8px; }
+  #modal-body  { font-size: 0.98rem; color: #666; margin-bottom: 22px; line-height: 1.5; white-space: pre-line; }
+  #modal-close {
+    font-family: var(--font); font-size: 1.05rem; font-weight: 800;
+    background: var(--header-bg); color: #fff; border: none;
+    border-radius: 12px; padding: 13px 36px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div style="font-size:3rem">💊</div>
+  <h1>Bill &amp; Sue's Meds</h1>
+  <p>Enter your PIN to continue</p>
+  <input type="password" id="pin-input" placeholder="••••" maxlength="8" inputmode="numeric" autocomplete="off">
+  <button id="login-btn" onclick="doLogin()">Unlock</button>
+  <div id="login-error">Incorrect PIN – try again</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div id="header">
+    <div id="header-left">
+      <h1>💊 Bill &amp; Sue's Meds</h1>
+      <div id="header-date"></div>
+    </div>
+    <div id="header-right">
+      <button class="hdr-btn" onclick="openLog()">📋 Log</button>
+      <button class="hdr-btn" onclick="openSettings()">⚙️ Settings</button>
+      <button class="hdr-btn" onclick="doLogout()">🔒 Lock</button>
+    </div>
+  </div>
+
+  <!-- Two-column pill grid -->
+  <div id="main">
+    <!-- Bill -->
+    <div class="person-col">
+      <div class="person-header">
+        <div class="person-avatar">👨</div>
+        <div class="person-name">Bill</div>
+      </div>
+      <div id="pills-bill"></div>
+      <div class="counts-card">
+        <h4>📦 Pill Counts</h4>
+        <div id="counts-bill"></div>
+      </div>
+    </div>
+
+    <!-- Sue -->
+    <div class="person-col">
+      <div class="person-header">
+        <div class="person-avatar">👩</div>
+        <div class="person-name">Sue</div>
+      </div>
+      <div id="pills-sue"></div>
+      <div class="counts-card">
+        <h4>📦 Pill Counts</h4>
+        <div id="counts-sue"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOG DRAWER -->
+<div class="panel-overlay" id="log-overlay" onclick="closeLog(event)">
+  <div class="panel-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">📋 History Log</div>
+      <button class="drawer-close" onclick="closeLog()">✕</button>
+    </div>
+    <button class="clear-log-btn" onclick="clearLog()">🗑 Clear Log</button>
+    <div id="log-content"></div>
+  </div>
+</div>
+
+<!-- SETTINGS DRAWER -->
+<div class="panel-overlay" id="settings-overlay" onclick="closeSettings(event)">
+  <div class="panel-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">⚙️ Settings</div>
+      <button class="drawer-close" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>🔒 Change PIN</h3>
+      <div class="setting-row">
+        <label>New PIN</label>
+        <input type="password" id="new-pin" inputmode="numeric" maxlength="8" placeholder="new PIN">
+      </div>
+      <button class="save-btn" onclick="savePIN()">Save PIN</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>📧 Email Notifications (EmailJS)</h3>
+      <p style="font-size:0.85rem;color:#888;margin-bottom:12px">
+        Set up a free <a href="https://www.emailjs.com" target="_blank" style="color:#3a5f8a">EmailJS</a> account and paste keys here to receive email alerts. Leave blank to disable.
+      </p>
+      <div class="setting-row"><label>Service ID</label><input type="text" id="ej-service" placeholder="service_xxx"></div>
+      <div class="setting-row"><label>Template ID</label><input type="text" id="ej-template" placeholder="template_xxx"></div>
+      <div class="setting-row"><label>Public Key</label><input type="text" id="ej-pubkey" placeholder="public_key"></div>
+      <div class="setting-row"><label>Notify Email</label><input type="email" id="ej-email" placeholder="you@example.com"></div>
+      <button class="save-btn" onclick="saveEmailJS()">Save</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>👨 Bill's Medications</h3>
+      <div id="bill-med-settings"></div>
+      <button class="save-btn" onclick="saveMeds('bill')">Save Bill's Meds</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>👩 Sue's Medications</h3>
+      <div id="sue-med-settings"></div>
+      <button class="save-btn" onclick="saveMeds('sue')">Save Sue's Meds</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-icon">⚠️</div>
+    <div id="modal-title">Alert</div>
+    <div id="modal-body"></div>
+    <button id="modal-close" onclick="closeModal()">OK</button>
+  </div>
+</div>
+
+<script>
+// ── DEFAULT CONFIG ──────────────────────────────────────────
+const DEFAULT_CONFIG = {
+  pin: "1234",
+  emailjs: { service:"", template:"", pubkey:"", email:"" },
+  people: {
+    bill: { meds: [
+      { id:"b1", name:"Lisinopril",    dose:"10mg",  color:"#e53935", dueTime:"08:00", refillAt:7, stock:30 },
+      { id:"b2", name:"Metformin",     dose:"500mg", color:"#1976d2", dueTime:"08:00", refillAt:7, stock:60 },
+      { id:"b3", name:"Atorvastatin",  dose:"20mg",  color:"#7b1fa2", dueTime:"21:00", refillAt:7, stock:30 }
+    ]},
+    sue: { meds: [
+      { id:"s1", name:"Amlodipine",    dose:"5mg",   color:"#00897b", dueTime:"08:00", refillAt:7, stock:30 },
+      { id:"s2", name:"Levothyroxine", dose:"50mcg", color:"#f57c00", dueTime:"07:00", refillAt:7, stock:30 }
+    ]}
+  }
+};
+
+// ── STATE ───────────────────────────────────────────────────
+let cfg        = loadCfg();
+let takenState = loadTaken();
+let log        = loadLog();
+let alertsFired = {};
+let alertInterval;
+
+function loadCfg()   { try { return JSON.parse(localStorage.getItem('medcfg')) || structuredClone(DEFAULT_CONFIG); } catch(e) { return structuredClone(DEFAULT_CONFIG); } }
+function saveCfg()   { localStorage.setItem('medcfg', JSON.stringify(cfg)); }
+function loadTaken() { try { return JSON.parse(localStorage.getItem('medtaken_' + todayKey())) || {}; } catch(e) { return {}; } }
+function saveTaken() { localStorage.setItem('medtaken_' + todayKey(), JSON.stringify(takenState)); }
+function loadLog()   { try { return JSON.parse(localStorage.getItem('medlog')) || []; } catch(e) { return []; } }
+function saveLog()   { localStorage.setItem('medlog', JSON.stringify(log)); }
+function todayKey()  { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+// ── LOGIN ───────────────────────────────────────────────────
+document.getElementById('pin-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogin() {
+  if(document.getElementById('pin-input').value === cfg.pin) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('login-error').style.display = 'none';
+    initApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+  }
+}
+function doLogout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  clearInterval(alertInterval);
+}
+
+// ── INIT ────────────────────────────────────────────────────
+function initApp() {
+  updateClock();
+  renderAll();
+  clearInterval(alertInterval);
+  alertsFired = {};
+  alertInterval = setInterval(checkAlerts, 30000);
+  checkAlerts();
+}
+
+function renderAll() {
+  renderPills('bill'); renderPills('sue');
+  renderCounts('bill'); renderCounts('sue');
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('header-date').textContent =
+    now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}) + '  ' + fmtTime(now);
+  setTimeout(updateClock, 10000);
+}
+
+function fmtTime(d) {
+  let h=d.getHours(), m=d.getMinutes(), ap=h>=12?'PM':'AM';
+  h=h%12||12;
+  return h+':'+String(m).padStart(2,'0')+' '+ap;
+}
+function fmtDue(t) {
+  const [hh,mm]=t.split(':').map(Number), ap=hh>=12?'PM':'AM', h=hh%12||12;
+  return 'Due by '+h+':'+String(mm).padStart(2,'0')+' '+ap;
+}
+function isOverdue(dueTime) {
+  const now=new Date(), [hh,mm]=dueTime.split(':').map(Number), due=new Date();
+  due.setHours(hh,mm,0,0); return now>due;
+}
+
+// ── RENDER PILLS ────────────────────────────────────────────
+function renderPills(person) {
+  const wrap = document.getElementById('pills-'+person);
+  wrap.innerHTML = '';
+  const col = document.createElement('div');
+  col.style.cssText = 'display:flex;flex-direction:column;gap:12px';
+  cfg.people[person].meds.forEach(med => col.appendChild(buildCard(person, med)));
+  wrap.appendChild(col);
+}
+
+function buildCard(person, med) {
+  const taken   = takenState[med.id];
+  const overdue = !taken && isOverdue(med.dueTime);
+  const card = document.createElement('div');
+  card.className = 'pill-card' + (taken?' taken':'') + (overdue?' overdue':'');
+  card.id = 'card-'+med.id;
+
+  const btn = document.createElement('button');
+  btn.className = 'pill-btn';
+  btn.onclick = () => takeMed(person, med.id);
+
+  const icon = document.createElement('div');
+  icon.className = 'pill-icon';
+  icon.style.background = taken ? '#66bb6a' : (overdue ? '#ffa726' : med.color);
+  icon.textContent = taken ? '✓' : (overdue ? '⚠️' : '💊');
+
+  const info = document.createElement('div');
+  info.className = 'pill-info';
+  info.innerHTML = `
+    <div class="pill-name">${med.name}</div>
+    <div class="pill-dose">${med.dose}</div>
+    <div class="pill-time">${fmtDue(med.dueTime)}</div>
+    <div class="pill-status">${taken ? '✅ Taken at '+taken.takenDisplay : (overdue ? '⚠️ OVERDUE' : 'Tap when taken')}</div>
+  `;
+
+  btn.appendChild(icon); btn.appendChild(info);
+  card.appendChild(btn);
+
+  const undo = document.createElement('div');
+  undo.className = 'undo-strip';
+  undo.innerHTML = `<button class="undo-btn" onclick="undoMed('${person}','${med.id}')">↩ Undo</button><span class="undo-info">Mark as not taken</span>`;
+  card.appendChild(undo);
+  return card;
+}
+
+// ── TAKE / UNDO ─────────────────────────────────────────────
+function takeMed(person, medId) {
+  if(takenState[medId]) return;
+  const now=new Date(), display=fmtTime(now);
+  takenState[medId] = { takenAt:now.toISOString(), takenDisplay:display };
+  saveTaken();
+  const med = getMed(person, medId);
+  if(med.stock > 0) med.stock--;
+  saveCfg();
+  log.unshift({ date:todayKey(), person, medName:med.name, status:'taken', time:display });
+  saveLog();
+  renderAll();
+  sendNotification('✅ Medication Taken', `${cap(person)} took ${med.name} at ${display}.`);
+  checkRefill(person, med);
+}
+
+function undoMed(person, medId) {
+  if(!takenState[medId]) return;
+  const med = getMed(person, medId);
+  delete takenState[medId]; saveTaken();
+  med.stock++; saveCfg();
+  const idx = log.findIndex(l=>l.date===todayKey()&&l.medName===med.name&&l.status==='taken');
+  if(idx!==-1) log.splice(idx,1); saveLog();
+  renderAll();
+}
+
+function getMed(person, medId) { return cfg.people[person].meds.find(m=>m.id===medId); }
+function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+
+// ── ALERTS ──────────────────────────────────────────────────
+function checkAlerts() {
+  ['bill','sue'].forEach(person => {
+    cfg.people[person].meds.forEach(med => {
+      if(takenState[med.id] || alertsFired[med.id] || !isOverdue(med.dueTime)) return;
+      alertsFired[med.id] = true;
+      showModal('⚠️','Medication Overdue',`${cap(person)} has not taken ${med.name} (${med.dose}).\n${fmtDue(med.dueTime)}`);
+      sendNotification('⚠️ Missed Medication',`${cap(person)} has NOT taken ${med.name} (due ${fmtDue(med.dueTime)}).`);
+    });
+  });
+}
+
+function checkRefill(person, med) {
+  if(med.stock <= med.refillAt) {
+    showModal('📦','Refill Soon',`${cap(person)}'s ${med.name} is running low — only ${med.stock} pill${med.stock!==1?'s':''} left!`);
+    sendNotification('📦 Refill Needed',`${cap(person)}'s ${med.name} has ${med.stock} pills left. Please refill.`);
+  }
+}
+
+// ── COUNTS ──────────────────────────────────────────────────
+function renderCounts(person) {
+  const el = document.getElementById('counts-'+person);
+  el.innerHTML = cfg.people[person].meds.map(med => {
+    const low = med.stock <= med.refillAt;
+    return `<div class="count-row">
+      <span class="count-name">${med.name}</span>
+      <span class="${low?'count-low':'count-stock'}">${med.stock} left${low?' ⚠️':''}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── LOG DRAWER ──────────────────────────────────────────────
+function openLog() {
+  renderLog();
+  document.getElementById('log-overlay').classList.add('open');
+}
+function closeLog(e) {
+  if(!e || e.target===document.getElementById('log-overlay')) document.getElementById('log-overlay').classList.remove('open');
+}
+function renderLog() {
+  const el = document.getElementById('log-content');
+  if(!log.length) { el.innerHTML='<p style="color:#aaa;padding:16px">No history yet.</p>'; return; }
+  let h=`<table class="log-table"><tr><th>Date</th><th>Person</th><th>Medication</th><th>Status</th><th>Time</th></tr>`;
+  log.slice(0,200).forEach(e => {
+    const cls=e.status==='taken'?'log-taken':'log-missed';
+    const lbl=e.status==='taken'?'✅ Taken':'⚠️ Missed';
+    h+=`<tr><td>${e.date}</td><td style="text-transform:capitalize">${e.person}</td><td>${e.medName}</td><td class="${cls}">${lbl}</td><td>${e.time||''}</td></tr>`;
+  });
+  el.innerHTML = h+'</table>';
+}
+function clearLog() {
+  if(confirm('Clear all log history?')) { log=[]; saveLog(); renderLog(); }
+}
+
+// ── SETTINGS DRAWER ─────────────────────────────────────────
+function openSettings() {
+  loadSettingsForm();
+  document.getElementById('settings-overlay').classList.add('open');
+}
+function closeSettings(e) {
+  if(!e || e.target===document.getElementById('settings-overlay')) document.getElementById('settings-overlay').classList.remove('open');
+}
+function loadSettingsForm() {
+  const ej=cfg.emailjs;
+  document.getElementById('ej-service').value  = ej.service||'';
+  document.getElementById('ej-template').value = ej.template||'';
+  document.getElementById('ej-pubkey').value   = ej.pubkey||'';
+  document.getElementById('ej-email').value    = ej.email||'';
+  ['bill','sue'].forEach(person => {
+    const c = document.getElementById(person+'-med-settings');
+    c.innerHTML='';
+    cfg.people[person].meds.forEach((med,i) => {
+      const row=document.createElement('div');
+      row.style.cssText='border:2px solid #e3eaf3;border-radius:12px;padding:14px;margin-bottom:12px';
+      row.innerHTML=`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="width:16px;height:16px;border-radius:50%;background:${med.color}"></div>
+          <strong>${med.name}</strong>
+        </div>
+        <div class="setting-row"><label>Name</label><input type="text" data-person="${person}" data-idx="${i}" data-field="name" value="${med.name}"></div>
+        <div class="setting-row"><label>Dose</label><input type="text" data-person="${person}" data-idx="${i}" data-field="dose" value="${med.dose}"></div>
+        <div class="setting-row"><label>Due By</label><input type="time" data-person="${person}" data-idx="${i}" data-field="dueTime" value="${med.dueTime}"></div>
+        <div class="setting-row"><label>Color</label><input type="color" data-person="${person}" data-idx="${i}" data-field="color" value="${med.color}" style="width:52px;height:40px;padding:2px;border-radius:6px;cursor:pointer"></div>
+        <div class="setting-row"><label>Stock</label><input type="number" data-person="${person}" data-idx="${i}" data-field="stock" value="${med.stock}" min="0" style="max-width:90px"></div>
+        <div class="setting-row"><label>Refill alert at</label><input type="number" data-person="${person}" data-idx="${i}" data-field="refillAt" value="${med.refillAt}" min="1" style="max-width:90px"></div>
+      `;
+      c.appendChild(row);
+    });
+  });
+}
+function saveMeds(person) {
+  document.querySelectorAll(`[data-person="${person}"]`).forEach(inp => {
+    const med=cfg.people[person].meds[parseInt(inp.dataset.idx)];
+    const f=inp.dataset.field;
+    med[f] = (f==='stock'||f==='refillAt') ? (parseInt(inp.value)||0) : inp.value;
+  });
+  saveCfg(); renderAll(); showToast('Saved!');
+}
+function savePIN() {
+  const v=document.getElementById('new-pin').value.trim();
+  if(!v) return showModal('⚠️','Error','Please enter a PIN.');
+  cfg.pin=v; saveCfg(); document.getElementById('new-pin').value=''; showToast('PIN updated!');
+}
+function saveEmailJS() {
+  cfg.emailjs={
+    service:  document.getElementById('ej-service').value.trim(),
+    template: document.getElementById('ej-template').value.trim(),
+    pubkey:   document.getElementById('ej-pubkey').value.trim(),
+    email:    document.getElementById('ej-email').value.trim()
+  };
+  saveCfg(); showToast('Saved!');
+}
+
+// ── NOTIFICATIONS ───────────────────────────────────────────
+function sendNotification(subject, message) {
+  const ej=cfg.emailjs;
+  if(!ej.service||!ej.template||!ej.pubkey||!ej.email) return;
+  if(!window.emailjs) {
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+    s.onload=()=>{ emailjs.init(ej.pubkey); doSend(subject,message); };
+    document.head.appendChild(s);
+  } else { doSend(subject,message); }
+}
+function doSend(subject,message) {
+  const ej=cfg.emailjs;
+  emailjs.send(ej.service,ej.template,{to_email:ej.email,subject,message,from_name:"Bill & Sue Med Tracker"})
+    .catch(err=>console.warn('EmailJS:',err));
+}
+
+// ── MODAL / TOAST ───────────────────────────────────────────
+function showModal(icon,title,body) {
+  document.getElementById('modal-icon').textContent=icon;
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').textContent=body;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+function showToast(msg) {
+  const t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#3a5f8a;color:#fff;padding:12px 24px;border-radius:12px;font-size:1rem;font-weight:700;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.2);transition:opacity 0.4s';
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),400); },1800);
+}
+
+document.addEventListener('keydown', e => {
+  if(document.getElementById('modal-overlay').classList.contains('open') && e.key==='Enter') closeModal();
+});
+</script>
+</body>
+</html>
