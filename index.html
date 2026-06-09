@@ -430,16 +430,16 @@
 // ── DEFAULT CONFIG ───────────────────────────────────────────
 // doses: array of time strings e.g. ["08:00","13:00","21:00"]
 const DEFAULT_CONFIG = {
-  configVersion: 2026060903,
+  configVersion: 2026060904,
   pin: "1234", adminPin: "0000",
   emailjs: { service:"", template:"", pubkey:"", email:"" },
   people: {
     bill: { meds: [
-      { id:"b1", name:"Escitalopram oxalate (Lexapro)", dose:"10 mg orally daily", color:"#e53935", doses:["11:00"],         refillAt:7, stock:30 },
-      { id:"b2", name:"Losartan",                        dose:"25 mg orally daily", color:"#1976d2", doses:["11:00"],         refillAt:7, stock:30 },
-      { id:"b3", name:"Omeprazole",                      dose:"Take 1 40 mg pill twice daily", color:"#7b1fa2", doses:["11:00","18:00"], refillAt:7, stock:60 },
-      { id:"b4", name:"Spironolactone",                  dose:"25 mg orally daily", color:"#00897b", doses:["11:00"],         refillAt:7, stock:30 },
-      { id:"b5", name:"Tamsulosin",                      dose:"0.4 mg orally daily", color:"#f57c00", doses:["11:00"],         refillAt:7, stock:30 }
+      { id:"b1", name:"Escitalopram oxalate (Lexapro)", dose:"one 10 mg pill once daily", color:"#e53935", doses:["11:00"],         refillAt:7, stock:30 },
+      { id:"b2", name:"Losartan",                        dose:"one 25 mg pill once daily", color:"#1976d2", doses:["11:00"],         refillAt:7, stock:30 },
+      { id:"b3", name:"Omeprazole",                      dose:"one 40 mg pill twice daily", color:"#7b1fa2", doses:["11:00","18:00"], refillAt:7, stock:60 },
+      { id:"b4", name:"Spironolactone",                  dose:"one 25 mg pill once daily", color:"#00897b", doses:["11:00"],         refillAt:7, stock:30 },
+      { id:"b5", name:"Tamsulosin",                      dose:"one 0.4 mg pill once daily", color:"#f57c00", doses:["11:00"],         refillAt:7, stock:30 }
     ]},
     sue: { meds: [
       { id:"s1", name:"Brimonidine-timolol eye drops", dose:"1 drop in right eye twice daily", color:"#00897b", doses:["11:00","18:00"], refillAt:7, stock:30 },
