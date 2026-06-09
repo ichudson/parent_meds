@@ -71,6 +71,16 @@
   }
   .person-avatar { font-size: 1.8rem; }
   .person-name   { font-size: 1.4rem; font-weight: 900; }
+  .today-summary {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .summary-pill {
+    background: #fff; border-radius: 12px; padding: 10px 8px; text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); border: 1px solid #e3eaf3;
+  }
+  .summary-number { display: block; font-size: 1.25rem; line-height: 1; font-weight: 900; color: var(--header-bg); }
+  .summary-label { display: block; margin-top: 4px; font-size: 0.76rem; font-weight: 800; color: #6b7280; }
+  .summary-pill.overdue .summary-number { color: #e65100; }
 
   /* Pill card */
   .pill-card {
@@ -269,6 +279,26 @@
   #modal-title { font-size: 1.4rem; font-weight: 900; color: #222; margin-bottom: 8px; }
   #modal-body  { font-size: 0.98rem; color: #666; margin-bottom: 22px; line-height: 1.5; white-space: pre-line; }
   #modal-close { font-family: var(--font); font-size: 1.05rem; font-weight: 800; background: var(--header-bg); color: #fff; border: none; border-radius: 12px; padding: 13px 36px; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid rgba(58,95,138,0.35); outline-offset: 2px; }
+
+  @media (min-width: 700px) and (max-width: 920px) {
+    #header { padding: 12px 14px; }
+    #header-left h1 { font-size: 1.18rem; }
+    #header-right { gap: 6px; }
+    .hdr-btn { min-height: 42px; padding: 7px 9px; font-size: 0.8rem; }
+    #main { grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px 12px 28px; }
+    .person-col { gap: 12px; }
+    .person-header { padding: 12px 14px; border-radius: 12px; }
+    .person-name { font-size: 1.25rem; }
+    .pill-card-header { padding: 14px 14px 8px; gap: 10px; }
+    .pill-icon { width: 44px; height: 44px; }
+    .pill-name { font-size: 1.05rem; white-space: normal; }
+    .dose-row { align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+    .dose-time-label { min-width: 64px; }
+    .dose-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dose-take-btn, .dose-undo-btn, .dose-skip-btn { min-height: 42px; width: 100%; }
+    .panel-drawer { width: min(560px, 90vw); }
+  }
 </style>
 </head>
 <body>
@@ -301,11 +331,13 @@
   <div id="main">
     <div class="person-col">
       <div class="person-header"><div class="person-avatar">👨</div><div class="person-name">Bill</div></div>
+      <div class="today-summary" id="summary-bill"></div>
       <div id="pills-bill"></div>
       <div class="counts-card"><h4>📦 Pill Counts</h4><div id="counts-bill"></div></div>
     </div>
     <div class="person-col">
       <div class="person-header"><div class="person-avatar">👩</div><div class="person-name">Sue</div></div>
+      <div class="today-summary" id="summary-sue"></div>
       <div id="pills-sue"></div>
       <div class="counts-card"><h4>📦 Pill Counts</h4><div id="counts-sue"></div></div>
     </div>
@@ -415,18 +447,43 @@ let log        = loadLog();
 let alertsFired = {}; // "medId_doseIdx": true
 let muted      = false;
 let alertInterval;
+let activeDayKey = todayKey();
 
-function loadCfg()     { try { return JSON.parse(localStorage.getItem('medcfg')) || structuredClone(DEFAULT_CONFIG); } catch(e) { return structuredClone(DEFAULT_CONFIG); } }
+function loadCfg()     { try { return JSON.parse(localStorage.getItem('medcfg')) || cloneDefaultConfig(); } catch(e) { return cloneDefaultConfig(); } }
 function saveCfg()     { localStorage.setItem('medcfg', JSON.stringify(cfg)); }
 function loadTaken()   { try { return JSON.parse(localStorage.getItem('medtaken_'+todayKey()))   || {}; } catch(e) { return {}; } }
 function saveTaken()   { localStorage.setItem('medtaken_'+todayKey(),   JSON.stringify(takenState)); }
 function loadSkipped() { try { return JSON.parse(localStorage.getItem('medskipped_'+todayKey())) || {}; } catch(e) { return {}; } }
 function saveSkipped() { localStorage.setItem('medskipped_'+todayKey(), JSON.stringify(skippedState)); }
-function loadLog()     { try { return JSON.parse(localStorage.getItem('medlog')) || []; } catch(e) { return []; } }
-function saveLog()     { localStorage.setItem('medlog', JSON.stringify(log)); }
+function loadLog()     { try { return pruneLog(JSON.parse(localStorage.getItem('medlog')) || []); } catch(e) { return []; } }
+function saveLog()     { log = pruneLog(log); localStorage.setItem('medlog', JSON.stringify(log)); }
 function todayKey()    { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function newId()       { return Math.random().toString(36).slice(2,8); }
 function doseKey(medId, doseIdx) { return medId+'_'+doseIdx; }
+function cloneDefaultConfig() { return JSON.parse(JSON.stringify(DEFAULT_CONFIG)); }
+function escapeHTML(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function pruneLog(entries) {
+  const cutoff = new Date();
+  cutoff.setHours(0,0,0,0);
+  cutoff.setDate(cutoff.getDate()-6);
+  return entries.filter(entry => {
+    if(!entry || !entry.date) return false;
+    const entryDate = new Date(entry.date+'T00:00:00');
+    return entryDate >= cutoff;
+  });
+}
+function refreshDailyStateIfNeeded() {
+  const day = todayKey();
+  if(day === activeDayKey) return;
+  activeDayKey = day;
+  takenState = loadTaken();
+  skippedState = loadSkipped();
+  alertsFired = {};
+  renderAll();
+  checkAlerts();
+}
 
 // ── LOGIN ────────────────────────────────────────────────────
 document.getElementById('pin-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
@@ -460,9 +517,11 @@ function initApp() {
 function renderAll() {
   renderPills('bill'); renderPills('sue');
   renderCounts('bill'); renderCounts('sue');
+  renderSummary('bill'); renderSummary('sue');
 }
 
 function updateClock() {
+  refreshDailyStateIfNeeded();
   const now=new Date();
   document.getElementById('header-date').textContent =
     now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})+'  '+fmtTime(now);
@@ -477,9 +536,28 @@ function fmtDueTime(t) {
   const [hh,mm]=t.split(':').map(Number),ap=hh>=12?'PM':'AM',h=hh%12||12;
   return h+':'+String(mm).padStart(2,'0')+' '+ap;
 }
+function minutesFor(timeStr) {
+  const [hh,mm]=timeStr.split(':').map(Number);
+  return (hh*60)+mm;
+}
+function currentMinutes() {
+  const now = new Date();
+  return (now.getHours()*60)+now.getMinutes();
+}
 function isOverdue(timeStr) {
   const now=new Date(),[hh,mm]=timeStr.split(':').map(Number),due=new Date();
   due.setHours(hh,mm,0,0); return now>due;
+}
+function activeDoseIndex(med) {
+  const doses = med.doses || ["08:00"];
+  const remaining = doses
+    .map((timeStr, i) => ({timeStr, i, mins: minutesFor(timeStr)}))
+    .filter(dose => !takenState[doseKey(med.id,dose.i)] && !skippedState[doseKey(med.id,dose.i)])
+    .sort((a,b) => a.mins-b.mins);
+  if(!remaining.length) return -1;
+  const nowM = currentMinutes();
+  const upcoming = remaining.find(dose => dose.mins >= nowM);
+  return upcoming ? upcoming.i : remaining[remaining.length-1].i;
 }
 
 // ── MUTE ─────────────────────────────────────────────────────
@@ -503,12 +581,11 @@ function renderPills(person) {
 
 function buildCard(person, med) {
   const doses = med.doses || ["08:00"];
+  const activeIdx = activeDoseIndex(med);
 
   // Determine card-level state
-  const allTaken = doses.every((_,i) => takenState[doseKey(med.id,i)]);
-  const hasOverdue = !allTaken && doses.some((t,i) =>
-    !takenState[doseKey(med.id,i)] && !skippedState[doseKey(med.id,i)] && isOverdue(t)
-  );
+  const allTaken = activeIdx === -1 && doses.every((_,i) => takenState[doseKey(med.id,i)] || skippedState[doseKey(med.id,i)]);
+  const hasOverdue = activeIdx !== -1 && isOverdue(doses[activeIdx]);
 
   const card = document.createElement('div');
   card.className = 'pill-card' + (allTaken?' all-taken':'') + (hasOverdue?' has-overdue':'');
@@ -523,7 +600,14 @@ function buildCard(person, med) {
   icon.textContent = allTaken ? '✓' : (hasOverdue ? '⚠️' : '💊');
   const hinfo = document.createElement('div');
   hinfo.className = 'pill-header-info';
-  hinfo.innerHTML = `<div class="pill-name">${med.name}</div><div class="pill-dose">${med.dose}</div>`;
+  const nameEl = document.createElement('div');
+  nameEl.className = 'pill-name';
+  nameEl.textContent = med.name;
+  const doseEl = document.createElement('div');
+  doseEl.className = 'pill-dose';
+  doseEl.textContent = med.dose;
+  hinfo.appendChild(nameEl);
+  hinfo.appendChild(doseEl);
   hdr.appendChild(icon); hdr.appendChild(hinfo);
   card.appendChild(hdr);
 
@@ -535,7 +619,8 @@ function buildCard(person, med) {
     const dk = doseKey(med.id, i);
     const taken   = takenState[dk];
     const skipped = skippedState[dk];
-    const overdue = !taken && !skipped && isOverdue(timeStr);
+    const isActive = i === activeIdx;
+    const overdue = isActive && !taken && !skipped && isOverdue(timeStr);
 
     const row = document.createElement('div');
     row.className = 'dose-row' + (taken?' taken-dose':'') + (overdue?' overdue-dose':'');
@@ -549,7 +634,9 @@ function buildCard(person, med) {
     if(taken)        status.textContent = '✅ '+taken.takenDisplay;
     else if(skipped) status.textContent = '— skipped';
     else if(overdue) status.textContent = 'Overdue';
-    else             status.textContent = 'Pending';
+    else if(isActive) status.textContent = 'Pending';
+    else if(isOverdue(timeStr)) status.textContent = 'Earlier dose';
+    else             status.textContent = 'Later today';
 
     const actions = document.createElement('div');
     actions.className = 'dose-actions';
@@ -560,7 +647,12 @@ function buildCard(person, med) {
       ub.className='dose-undo-btn'; ub.textContent='↩ Undo';
       ub.onclick = () => undoDose(person, med.id, i);
       actions.appendChild(ub);
-    } else if(!skipped) {
+    } else if(skipped) {
+      const ub = document.createElement('button');
+      ub.className='dose-undo-btn'; ub.textContent='↩ Undo skip';
+      ub.onclick = () => undoSkip(person, med.id, i);
+      actions.appendChild(ub);
+    } else if(!skipped && isActive) {
       // Take button
       const tb = document.createElement('button');
       tb.className='dose-take-btn'; tb.textContent='✓ Taken';
@@ -614,6 +706,22 @@ function undoDose(person, medId, doseIdx) {
   renderAll();
 }
 
+function undoSkip(person, medId, doseIdx) {
+  const dk = doseKey(medId, doseIdx);
+  if(!skippedState[dk]) return;
+  const med=getMed(person,medId);
+  delete skippedState[dk];
+  saveSkipped();
+  const doseLabel = med.doses.length>1 ? ` (dose ${doseIdx+1} of ${med.doses.length})` : '';
+  const idx=log.findIndex(l=>l.date===todayKey()&&l.person===person&&l.medName===med.name+doseLabel&&l.status==='skipped');
+  if(idx!==-1) {
+    log.splice(idx,1);
+    saveLog();
+  }
+  delete alertsFired[dk];
+  renderAll();
+}
+
 function skipDose(person, medId, doseIdx) {
   const dk = doseKey(medId, doseIdx);
   if(takenState[dk]) return; // already taken, can't skip
@@ -636,7 +744,10 @@ function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
 function checkAlerts() {
   ['bill','sue'].forEach(person => {
     cfg.people[person].meds.forEach(med => {
+      const activeIdx = activeDoseIndex(med);
+      if(activeIdx === -1) return;
       (med.doses||["08:00"]).forEach((timeStr, i) => {
+        if(i !== activeIdx) return;
         const dk = doseKey(med.id, i);
         if(takenState[dk] || skippedState[dk] || alertsFired[dk] || !isOverdue(timeStr)) return;
         alertsFired[dk] = true;
@@ -664,8 +775,26 @@ function renderCounts(person) {
   document.getElementById('counts-'+person).innerHTML =
     cfg.people[person].meds.map(med => {
       const low=med.stock<=med.refillAt;
-      return `<div class="count-row"><span class="count-name">${med.name}</span><span class="${low?'count-low':'count-stock'}">${med.stock} left${low?' ⚠️':''}</span></div>`;
+      return `<div class="count-row"><span class="count-name">${escapeHTML(med.name)}</span><span class="${low?'count-low':'count-stock'}">${Number(med.stock)||0} left${low?' ⚠️':''}</span></div>`;
     }).join('');
+}
+
+function renderSummary(person) {
+  const totals = cfg.people[person].meds.reduce((acc, med) => {
+    const activeIdx = activeDoseIndex(med);
+    (med.doses||["08:00"]).forEach((timeStr, i) => {
+      const dk = doseKey(med.id, i);
+      if(takenState[dk]) acc.taken++;
+      else if(i === activeIdx && isOverdue(timeStr)) acc.overdue++;
+      else if(i === activeIdx) acc.pending++;
+    });
+    return acc;
+  }, {taken:0,overdue:0,pending:0});
+  document.getElementById('summary-'+person).innerHTML = `
+    <div class="summary-pill"><span class="summary-number">${totals.taken}</span><span class="summary-label">taken</span></div>
+    <div class="summary-pill overdue"><span class="summary-number">${totals.overdue}</span><span class="summary-label">overdue</span></div>
+    <div class="summary-pill"><span class="summary-number">${totals.pending}</span><span class="summary-label">pending</span></div>
+  `;
 }
 
 // ── LOG ──────────────────────────────────────────────────────
@@ -673,12 +802,13 @@ function openLog() { renderLog(); document.getElementById('log-overlay').classLi
 function closeLog(e) { if(!e||e.target===document.getElementById('log-overlay')) document.getElementById('log-overlay').classList.remove('open'); }
 function renderLog() {
   const el=document.getElementById('log-content');
-  if(!log.length) { el.innerHTML='<p style="color:#aaa;padding:16px">No history yet.</p>'; return; }
+  log = pruneLog(log);
+  if(!log.length) { el.innerHTML='<p style="color:#aaa;padding:16px">No history in the last 7 days.</p>'; return; }
   let h=`<table class="log-table"><tr><th>Date</th><th>Person</th><th>Medication</th><th>Status</th><th>Time</th></tr>`;
-  log.slice(0,200).forEach(e => {
+  log.forEach(e => {
     const cls = e.status==='taken' ? 'log-taken' : e.status==='skipped' ? 'log-skipped' : 'log-missed';
     const lbl = e.status==='taken' ? '✅ Taken' : e.status==='skipped' ? '⏭ Skipped' : '⚠️ Missed';
-    h+=`<tr><td>${e.date}</td><td style="text-transform:capitalize">${e.person}</td><td>${e.medName}</td><td class="${cls}">${lbl}</td><td>${e.time||''}</td></tr>`;
+    h+=`<tr><td>${escapeHTML(e.date)}</td><td style="text-transform:capitalize">${escapeHTML(e.person)}</td><td>${escapeHTML(e.medName)}</td><td class="${cls}">${lbl}</td><td>${escapeHTML(e.time||'')}</td></tr>`;
   });
   el.innerHTML=h+'</table>';
 }
@@ -736,7 +866,7 @@ function makeMedRow(person, med, i) {
   // Build dose time entries HTML
   const doseTimesHtml = doses.map((t,di) => `
     <div class="dose-time-entry" id="dte-${person}-${i}-${di}">
-      <input type="time" value="${t}" data-person="${person}" data-idx="${i}" data-doseidx="${di}" data-field="doseTime">
+      <input type="time" value="${escapeHTML(t)}" data-person="${person}" data-idx="${i}" data-doseidx="${di}" data-field="doseTime">
       ${doses.length>1 ? `<button class="remove-dose-time-btn" onclick="removeDoseTime('${person}',${i},${di})">✕</button>` : ''}
     </div>
   `).join('');
@@ -744,18 +874,18 @@ function makeMedRow(person, med, i) {
   row.innerHTML=`
     <div class="med-editor-top">
       <div class="med-editor-label">
-        <div class="med-color-dot" style="background:${med.color}" id="dot-${person}-${i}"></div>
-        <span id="medlabel-${person}-${i}">${med.name||'New Medication'}</span>
+        <div class="med-color-dot" style="background:${escapeHTML(med.color)}" id="dot-${person}-${i}"></div>
+        <span id="medlabel-${person}-${i}">${escapeHTML(med.name||'New Medication')}</span>
       </div>
       <button class="delete-med-btn" onclick="deleteMed('${person}',${i})">🗑 Delete</button>
     </div>
     <div class="setting-row"><label>Name</label>
-      <input type="text" data-person="${person}" data-idx="${i}" data-field="name" value="${med.name}"
+      <input type="text" data-person="${person}" data-idx="${i}" data-field="name" value="${escapeHTML(med.name)}"
         oninput="liveUpdateLabel(this)"></div>
     <div class="setting-row"><label>Dose</label>
-      <input type="text" data-person="${person}" data-idx="${i}" data-field="dose" value="${med.dose}"></div>
+      <input type="text" data-person="${person}" data-idx="${i}" data-field="dose" value="${escapeHTML(med.dose)}"></div>
     <div class="setting-row"><label>Color</label>
-      <input type="color" data-person="${person}" data-idx="${i}" data-field="color" value="${med.color}"
+      <input type="color" data-person="${person}" data-idx="${i}" data-field="color" value="${escapeHTML(med.color)}"
         style="width:52px;height:40px;padding:2px;border-radius:6px;cursor:pointer"
         oninput="liveUpdateDot(this)"></div>
     <div class="setting-row"><label>Stock</label>
