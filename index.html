@@ -8,27 +8,19 @@
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
   :root {
-    --bg: #f0f4f8;
-    --card: #ffffff;
-    --shadow: 0 4px 24px rgba(0,0,0,0.10);
-    --radius: 20px;
-    --taken-bg: #e8f5e9;
-    --taken-border: #66bb6a;
-    --taken-text: #2e7d32;
-    --alert-bg: #fff3e0;
-    --alert-border: #ffa726;
-    --header-bg: #3a5f8a;
-    --font: 'Nunito', sans-serif;
+    --bg: #f0f4f8; --card: #ffffff;
+    --shadow: 0 4px 24px rgba(0,0,0,0.10); --radius: 20px;
+    --taken-bg: #e8f5e9; --taken-border: #66bb6a; --taken-text: #2e7d32;
+    --alert-bg: #fff3e0; --alert-border: #ffa726;
+    --header-bg: #3a5f8a; --font: 'Nunito', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; font-family: var(--font); background: var(--bg); }
 
-  /* ── LOGIN ── */
+  /* LOGIN */
   #login-screen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100vh; gap: 22px;
-    background: linear-gradient(135deg, #3a5f8a 0%, #5b8ec4 100%);
+    height: 100vh; gap: 22px; background: linear-gradient(135deg, #3a5f8a 0%, #5b8ec4 100%);
   }
   #login-screen h1 { font-size: 2.2rem; font-weight: 900; color: #fff; }
   #login-screen p  { color: rgba(255,255,255,0.8); font-size: 1.05rem; }
@@ -46,24 +38,26 @@
   #login-btn:active { transform: scale(0.97); }
   #login-error { color: #ffcdd2; font-size: 1rem; display: none; }
 
-  /* ── APP ── */
+  /* APP */
   #app { display: none; flex-direction: column; min-height: 100vh; }
 
   /* Header */
   #header {
-    background: var(--header-bg); color: #fff;
-    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+    background: var(--header-bg); color: #fff; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   }
   #header-left h1 { font-size: 1.4rem; font-weight: 900; }
   #header-date { font-size: 0.88rem; opacity: 0.75; margin-top: 1px; }
-  #header-right { display: flex; gap: 10px; }
+  #header-right { display: flex; gap: 10px; align-items: center; }
   .hdr-btn {
     background: rgba(255,255,255,0.18); border: none; color: #fff;
     border-radius: 9px; padding: 8px 13px; font-family: var(--font); font-size: 0.88rem;
-    cursor: pointer; font-weight: 700;
+    cursor: pointer; font-weight: 700; transition: background 0.15s;
   }
   .hdr-btn:active { background: rgba(255,255,255,0.32); }
+  #mute-btn { font-size: 1.1rem; padding: 7px 12px; }
+  #mute-btn.muted { background: rgba(255,200,0,0.28); }
 
   /* Two-column grid */
   #main {
@@ -83,43 +77,66 @@
     background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
     overflow: hidden; border: 2px solid transparent; transition: border-color 0.2s, background 0.2s;
   }
-  .pill-card.taken   { background: var(--taken-bg); border-color: var(--taken-border); }
-  .pill-card.overdue { background: var(--alert-bg); border-color: var(--alert-border);
+  .pill-card.all-taken { background: var(--taken-bg); border-color: var(--taken-border); }
+  .pill-card.has-overdue { background: var(--alert-bg); border-color: var(--alert-border);
     animation: pulse-alert 1.8s ease-in-out infinite; }
   @keyframes pulse-alert {
     0%,100% { box-shadow: 0 4px 20px rgba(255,152,0,0.15); }
     50%      { box-shadow: 0 4px 32px rgba(255,152,0,0.5); }
   }
 
-  .pill-btn {
-    width: 100%; border: none; cursor: pointer; font-family: var(--font);
-    padding: 20px 18px; display: flex; align-items: center; gap: 14px;
-    background: transparent; text-align: left;
+  /* Pill card header bar */
+  .pill-card-header {
+    display: flex; align-items: center; gap: 14px; padding: 18px 18px 10px;
   }
-  .pill-btn:active { opacity: 0.72; }
   .pill-icon {
-    width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff;
+    width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff;
   }
-  .pill-info  { flex: 1; min-width: 0; }
-  .pill-name  { font-size: 1.25rem; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pill-dose  { font-size: 0.9rem; color: #666; margin-top: 2px; }
-  .pill-time  { font-size: 0.85rem; color: #999; margin-top: 2px; }
-  .pill-status{ font-size: 0.92rem; font-weight: 700; margin-top: 5px; }
-  .pill-card.taken   .pill-name   { color: var(--taken-text); }
-  .pill-card.taken   .pill-status { color: var(--taken-text); }
-  .pill-card.overdue .pill-name   { color: #e65100; }
-  .pill-card.overdue .pill-status { color: #bf360c; font-weight: 800; }
+  .pill-header-info { flex: 1; min-width: 0; }
+  .pill-name { font-size: 1.2rem; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pill-dose { font-size: 0.88rem; color: #666; margin-top: 2px; }
+  .pill-card.all-taken .pill-name { color: var(--taken-text); }
+  .pill-card.has-overdue .pill-name { color: #e65100; }
 
-  /* Undo strip */
-  .undo-strip { border-top: 1px solid #e0ede0; padding: 8px 16px; display: none; align-items: center; gap: 10px; }
-  .pill-card.taken .undo-strip { display: flex; }
-  .undo-btn {
-    font-family: var(--font); font-size: 0.92rem; font-weight: 700;
-    background: #eee; color: #555; border: none; border-radius: 8px; padding: 7px 16px; cursor: pointer;
+  /* Dose rows */
+  .dose-rows { padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .dose-row {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(0,0,0,0.03); border-radius: 12px; padding: 10px 12px;
+    border: 1.5px solid transparent; transition: background 0.15s, border-color 0.15s;
   }
-  .undo-btn:active { background: #ddd; }
-  .undo-info { font-size: 0.82rem; color: #aaa; }
+  .dose-row.taken-dose   { background: #f1faf2; border-color: #a5d6a7; }
+  .dose-row.overdue-dose { background: #fff8f0; border-color: #ffcc80; }
+
+  .dose-time-label { font-size: 0.85rem; font-weight: 800; color: #888; min-width: 70px; }
+  .dose-row.taken-dose   .dose-time-label { color: var(--taken-text); }
+  .dose-row.overdue-dose .dose-time-label { color: #e65100; }
+
+  .dose-status { flex: 1; font-size: 0.88rem; font-weight: 700; color: #aaa; }
+  .dose-row.taken-dose   .dose-status { color: var(--taken-text); }
+  .dose-row.overdue-dose .dose-status { color: #e65100; }
+
+  /* Dose action buttons */
+  .dose-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .dose-take-btn {
+    font-family: var(--font); font-size: 0.82rem; font-weight: 800;
+    background: var(--header-bg); color: #fff; border: none;
+    border-radius: 8px; padding: 7px 13px; cursor: pointer; white-space: nowrap;
+  }
+  .dose-take-btn:active { opacity: 0.75; }
+  .dose-undo-btn {
+    font-family: var(--font); font-size: 0.82rem; font-weight: 700;
+    background: #eee; color: #666; border: none;
+    border-radius: 8px; padding: 7px 11px; cursor: pointer;
+  }
+  .dose-undo-btn:active { background: #ddd; }
+  .dose-skip-btn {
+    font-family: var(--font); font-size: 0.82rem; font-weight: 700;
+    background: #fff3e0; color: #e65100; border: none;
+    border-radius: 8px; padding: 7px 11px; cursor: pointer; white-space: nowrap;
+  }
+  .dose-skip-btn:active { background: #ffe0b2; }
 
   /* Counts card */
   .counts-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
@@ -133,7 +150,7 @@
   .count-stock { color: #555; }
   .count-low   { color: #e65100; font-weight: 800; }
 
-  /* ── PANEL OVERLAYS (drawers) ── */
+  /* Panel overlays */
   .panel-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
   .panel-overlay.open { display: block; }
   .panel-drawer {
@@ -145,7 +162,7 @@
   .drawer-title  { font-size: 1.4rem; font-weight: 900; color: var(--header-bg); }
   .drawer-close  { font-size: 1.6rem; background: none; border: none; cursor: pointer; color: #888; line-height: 1; }
 
-  /* ── ADMIN PIN GATE (inside settings overlay) ── */
+  /* Admin gate */
   #admin-gate {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 18px; padding: 40px 20px; text-align: center;
@@ -166,7 +183,7 @@
   #admin-pin-error { color: #c62828; font-size: 0.92rem; display: none; }
   #settings-form   { display: none; flex-direction: column; gap: 18px; }
 
-  /* Settings sections */
+  /* Settings */
   .settings-section { background: #fff; border-radius: 16px; box-shadow: var(--shadow); padding: 20px; }
   .settings-section h3 {
     font-size: 1.05rem; font-weight: 800; color: var(--header-bg);
@@ -187,22 +204,37 @@
   }
   .save-btn:active { opacity: 0.8; }
 
-  /* Med editor rows */
-  .med-editor-row {
-    border: 2px solid #e3eaf3; border-radius: 12px; padding: 14px; margin-bottom: 12px;
-    background: #f9fbfd;
-  }
-  .med-editor-top {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
-  }
+  /* Med editor */
+  .med-editor-row { border: 2px solid #e3eaf3; border-radius: 12px; padding: 14px; margin-bottom: 12px; background: #f9fbfd; }
+  .med-editor-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .med-editor-label { display: flex; align-items: center; gap: 8px; font-weight: 800; color: #333; }
   .med-color-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
   .delete-med-btn {
     font-family: var(--font); font-size: 0.85rem; font-weight: 800;
-    background: #ffebee; color: #c62828; border: none;
-    border-radius: 8px; padding: 6px 14px; cursor: pointer;
+    background: #ffebee; color: #c62828; border: none; border-radius: 8px; padding: 6px 14px; cursor: pointer;
   }
-  .delete-med-btn:active { background: #ffcdd2; }
+
+  /* Dose time editor */
+  .dose-times-editor { margin: 8px 0 4px; }
+  .dose-times-editor label { font-size: 0.9rem; font-weight: 700; color: #555; display: block; margin-bottom: 6px; }
+  .dose-time-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .dose-time-entry { display: flex; align-items: center; gap: 8px; }
+  .dose-time-entry input[type=time] {
+    font-family: var(--font); font-size: 0.95rem; padding: 7px 10px;
+    border-radius: 8px; border: 2px solid #dde4ef; color: #333; background: #f7f9fc; outline: none; flex: 1;
+  }
+  .dose-time-entry input[type=time]:focus { border-color: var(--header-bg); }
+  .remove-dose-time-btn {
+    font-family: var(--font); font-size: 0.8rem; font-weight: 800;
+    background: #ffebee; color: #c62828; border: none; border-radius: 7px;
+    padding: 6px 10px; cursor: pointer; flex-shrink: 0;
+  }
+  .add-dose-time-btn {
+    font-family: var(--font); font-size: 0.85rem; font-weight: 800;
+    background: #e3f2fd; color: #1565c0; border: 1.5px dashed #90caf9;
+    border-radius: 8px; padding: 7px 14px; cursor: pointer; width: 100%;
+  }
+
   .add-med-btn {
     font-family: var(--font); font-size: 0.95rem; font-weight: 800;
     background: #e8f5e9; color: #2e7d32; border: 2px dashed #66bb6a;
@@ -210,17 +242,17 @@
   }
   .add-med-btn:active { background: #c8e6c9; }
 
-  /* Log table */
+  /* Log */
   .log-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
   .log-table th { background: var(--header-bg); color: #fff; padding: 10px 12px; font-size: 0.9rem; text-align: left; }
   .log-table td { padding: 9px 12px; font-size: 0.88rem; color: #444; border-bottom: 1px solid #f0f0f0; }
   .log-table tr:last-child td { border-bottom: none; }
-  .log-taken  { color: #2e7d32; font-weight: 700; }
-  .log-missed { color: #c62828; font-weight: 700; }
+  .log-taken   { color: #2e7d32; font-weight: 700; }
+  .log-missed  { color: #c62828; font-weight: 700; }
+  .log-skipped { color: #e65100; font-weight: 700; }
   .clear-log-btn {
     font-family: var(--font); font-size: 0.95rem; font-weight: 800;
-    background: #ffebee; color: #c62828; border: none;
-    border-radius: 10px; padding: 10px 20px; cursor: pointer;
+    background: #ffebee; color: #c62828; border: none; border-radius: 10px; padding: 10px 20px; cursor: pointer;
   }
 
   /* Modal */
@@ -236,16 +268,12 @@
   #modal-icon  { font-size: 2.8rem; margin-bottom: 10px; }
   #modal-title { font-size: 1.4rem; font-weight: 900; color: #222; margin-bottom: 8px; }
   #modal-body  { font-size: 0.98rem; color: #666; margin-bottom: 22px; line-height: 1.5; white-space: pre-line; }
-  #modal-close {
-    font-family: var(--font); font-size: 1.05rem; font-weight: 800;
-    background: var(--header-bg); color: #fff; border: none;
-    border-radius: 12px; padding: 13px 36px; cursor: pointer;
-  }
+  #modal-close { font-family: var(--font); font-size: 1.05rem; font-weight: 800; background: var(--header-bg); color: #fff; border: none; border-radius: 12px; padding: 13px 36px; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN ── -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div style="font-size:3rem">💊</div>
   <h1>Bill &amp; Sue's Meds</h1>
@@ -255,7 +283,7 @@
   <div id="login-error">Incorrect PIN – try again</div>
 </div>
 
-<!-- ── APP ── -->
+<!-- APP -->
 <div id="app">
   <div id="header">
     <div id="header-left">
@@ -263,6 +291,7 @@
       <div id="header-date"></div>
     </div>
     <div id="header-right">
+      <button class="hdr-btn" id="mute-btn" onclick="toggleMute()" title="Mute overdue alerts">🔔</button>
       <button class="hdr-btn" onclick="openLog()">📋 Log</button>
       <button class="hdr-btn" onclick="openSettings()">⚙️ Settings</button>
       <button class="hdr-btn" onclick="doLogout()">🔒 Lock</button>
@@ -270,34 +299,20 @@
   </div>
 
   <div id="main">
-    <!-- Bill -->
     <div class="person-col">
-      <div class="person-header">
-        <div class="person-avatar">👨</div>
-        <div class="person-name">Bill</div>
-      </div>
+      <div class="person-header"><div class="person-avatar">👨</div><div class="person-name">Bill</div></div>
       <div id="pills-bill"></div>
-      <div class="counts-card">
-        <h4>📦 Pill Counts</h4>
-        <div id="counts-bill"></div>
-      </div>
+      <div class="counts-card"><h4>📦 Pill Counts</h4><div id="counts-bill"></div></div>
     </div>
-    <!-- Sue -->
     <div class="person-col">
-      <div class="person-header">
-        <div class="person-avatar">👩</div>
-        <div class="person-name">Sue</div>
-      </div>
+      <div class="person-header"><div class="person-avatar">👩</div><div class="person-name">Sue</div></div>
       <div id="pills-sue"></div>
-      <div class="counts-card">
-        <h4>📦 Pill Counts</h4>
-        <div id="counts-sue"></div>
-      </div>
+      <div class="counts-card"><h4>📦 Pill Counts</h4><div id="counts-sue"></div></div>
     </div>
   </div>
 </div>
 
-<!-- ── LOG DRAWER ── -->
+<!-- LOG DRAWER -->
 <div class="panel-overlay" id="log-overlay" onclick="closeLog(event)">
   <div class="panel-drawer">
     <div class="drawer-header">
@@ -309,7 +324,7 @@
   </div>
 </div>
 
-<!-- ── SETTINGS DRAWER ── -->
+<!-- SETTINGS DRAWER -->
 <div class="panel-overlay" id="settings-overlay" onclick="closeSettings(event)">
   <div class="panel-drawer">
     <div class="drawer-header">
@@ -317,7 +332,6 @@
       <button class="drawer-close" onclick="closeSettings()">✕</button>
     </div>
 
-    <!-- Admin PIN gate -->
     <div id="admin-gate">
       <div style="font-size:2.5rem">🔐</div>
       <h2>Administrator Access</h2>
@@ -327,27 +341,17 @@
       <div id="admin-pin-error">Incorrect admin PIN</div>
     </div>
 
-    <!-- Actual settings form (hidden until admin PIN entered) -->
     <div id="settings-form">
-
       <div class="settings-section">
         <h3>🔒 Change PINs</h3>
-        <div class="setting-row">
-          <label>User PIN</label>
-          <input type="password" id="new-pin" inputmode="numeric" maxlength="8" placeholder="new user PIN">
-        </div>
-        <div class="setting-row">
-          <label>Admin PIN</label>
-          <input type="password" id="new-admin-pin" inputmode="numeric" maxlength="8" placeholder="new admin PIN">
-        </div>
+        <div class="setting-row"><label>User PIN</label><input type="password" id="new-pin" inputmode="numeric" maxlength="8" placeholder="new user PIN"></div>
+        <div class="setting-row"><label>Admin PIN</label><input type="password" id="new-admin-pin" inputmode="numeric" maxlength="8" placeholder="new admin PIN"></div>
         <button class="save-btn" onclick="savePINs()">Save PINs</button>
       </div>
 
       <div class="settings-section">
         <h3>📧 Email Notifications (EmailJS)</h3>
-        <p style="font-size:0.85rem;color:#888;margin-bottom:12px">
-          Set up a free <a href="https://www.emailjs.com" target="_blank" style="color:#3a5f8a">EmailJS</a> account and paste keys here. Leave blank to disable.
-        </p>
+        <p style="font-size:0.85rem;color:#888;margin-bottom:12px">Set up a free <a href="https://www.emailjs.com" target="_blank" style="color:#3a5f8a">EmailJS</a> account and paste keys here. Leave blank to disable.</p>
         <div class="setting-row"><label>Service ID</label><input type="text" id="ej-service" placeholder="service_xxx"></div>
         <div class="setting-row"><label>Template ID</label><input type="text" id="ej-template" placeholder="template_xxx"></div>
         <div class="setting-row"><label>Public Key</label><input type="text" id="ej-pubkey" placeholder="public_key"></div>
@@ -370,12 +374,11 @@
         <br>
         <button class="save-btn" style="margin-top:12px" onclick="saveMeds('sue')">Save Sue's Meds</button>
       </div>
-
-    </div><!-- /settings-form -->
+    </div>
   </div>
 </div>
 
-<!-- ── MODAL ── -->
+<!-- MODAL -->
 <div id="modal-overlay">
   <div id="modal-box">
     <div id="modal-icon">⚠️</div>
@@ -387,66 +390,69 @@
 
 <script>
 // ── DEFAULT CONFIG ───────────────────────────────────────────
+// doses: array of time strings e.g. ["08:00","13:00","21:00"]
 const DEFAULT_CONFIG = {
-  pin:      "1234",
-  adminPin: "0000",
-  emailjs:  { service:"", template:"", pubkey:"", email:"" },
+  pin: "1234", adminPin: "0000",
+  emailjs: { service:"", template:"", pubkey:"", email:"" },
   people: {
     bill: { meds: [
-      { id:"b1", name:"Lisinopril",    dose:"10mg",  color:"#e53935", dueTime:"08:00", refillAt:7, stock:30 },
-      { id:"b2", name:"Metformin",     dose:"500mg", color:"#1976d2", dueTime:"08:00", refillAt:7, stock:60 },
-      { id:"b3", name:"Atorvastatin",  dose:"20mg",  color:"#7b1fa2", dueTime:"21:00", refillAt:7, stock:30 }
+      { id:"b1", name:"Lisinopril",   dose:"10mg",  color:"#e53935", doses:["08:00"],         refillAt:7, stock:30 },
+      { id:"b2", name:"Metformin",    dose:"500mg", color:"#1976d2", doses:["08:00","21:00"],  refillAt:7, stock:60 },
+      { id:"b3", name:"Atorvastatin", dose:"20mg",  color:"#7b1fa2", doses:["21:00"],          refillAt:7, stock:30 }
     ]},
     sue: { meds: [
-      { id:"s1", name:"Amlodipine",    dose:"5mg",   color:"#00897b", dueTime:"08:00", refillAt:7, stock:30 },
-      { id:"s2", name:"Levothyroxine", dose:"50mcg", color:"#f57c00", dueTime:"07:00", refillAt:7, stock:30 }
+      { id:"s1", name:"Amlodipine",    dose:"5mg",   color:"#00897b", doses:["08:00"],         refillAt:7, stock:30 },
+      { id:"s2", name:"Levothyroxine", dose:"50mcg", color:"#f57c00", doses:["07:00"],          refillAt:7, stock:30 }
     ]}
   }
 };
 
-// ── STATE ─────────────────────────────────────────────────────
+// ── STATE ────────────────────────────────────────────────────
 let cfg        = loadCfg();
-let takenState = loadTaken();
+let takenState = loadTaken(); // keys: "medId_doseIdx"  value: {takenAt, takenDisplay}
+let skippedState = loadSkipped(); // keys: "medId_doseIdx" value: true
 let log        = loadLog();
-let alertsFired = {};
+let alertsFired = {}; // "medId_doseIdx": true
+let muted      = false;
 let alertInterval;
 
-function loadCfg()   { try { return JSON.parse(localStorage.getItem('medcfg')) || structuredClone(DEFAULT_CONFIG); } catch(e) { return structuredClone(DEFAULT_CONFIG); } }
-function saveCfg()   { localStorage.setItem('medcfg', JSON.stringify(cfg)); }
-function loadTaken() { try { return JSON.parse(localStorage.getItem('medtaken_'+todayKey())) || {}; } catch(e) { return {}; } }
-function saveTaken() { localStorage.setItem('medtaken_'+todayKey(), JSON.stringify(takenState)); }
-function loadLog()   { try { return JSON.parse(localStorage.getItem('medlog')) || []; } catch(e) { return []; } }
-function saveLog()   { localStorage.setItem('medlog', JSON.stringify(log)); }
-function todayKey()  { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function newId()     { return Math.random().toString(36).slice(2,8); }
+function loadCfg()     { try { return JSON.parse(localStorage.getItem('medcfg')) || structuredClone(DEFAULT_CONFIG); } catch(e) { return structuredClone(DEFAULT_CONFIG); } }
+function saveCfg()     { localStorage.setItem('medcfg', JSON.stringify(cfg)); }
+function loadTaken()   { try { return JSON.parse(localStorage.getItem('medtaken_'+todayKey()))   || {}; } catch(e) { return {}; } }
+function saveTaken()   { localStorage.setItem('medtaken_'+todayKey(),   JSON.stringify(takenState)); }
+function loadSkipped() { try { return JSON.parse(localStorage.getItem('medskipped_'+todayKey())) || {}; } catch(e) { return {}; } }
+function saveSkipped() { localStorage.setItem('medskipped_'+todayKey(), JSON.stringify(skippedState)); }
+function loadLog()     { try { return JSON.parse(localStorage.getItem('medlog')) || []; } catch(e) { return []; } }
+function saveLog()     { localStorage.setItem('medlog', JSON.stringify(log)); }
+function todayKey()    { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function newId()       { return Math.random().toString(36).slice(2,8); }
+function doseKey(medId, doseIdx) { return medId+'_'+doseIdx; }
 
-// ── LOGIN ─────────────────────────────────────────────────────
+// ── LOGIN ────────────────────────────────────────────────────
 document.getElementById('pin-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-
 function doLogin() {
   if(document.getElementById('pin-input').value === cfg.pin) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    document.getElementById('pin-input').value = '';
-    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('pin-input').value='';
+    document.getElementById('login-error').style.display='none';
     initApp();
   } else {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('pin-input').value = '';
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('pin-input').value='';
   }
 }
 function doLogout() {
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
   clearInterval(alertInterval);
 }
 
-// ── INIT ──────────────────────────────────────────────────────
+// ── INIT ─────────────────────────────────────────────────────
 function initApp() {
-  updateClock();
-  renderAll();
+  updateClock(); renderAll();
   clearInterval(alertInterval);
-  alertsFired = {};
+  alertsFired={};
   alertInterval = setInterval(checkAlerts, 30000);
   checkAlerts();
 }
@@ -457,104 +463,191 @@ function renderAll() {
 }
 
 function updateClock() {
-  const now = new Date();
+  const now=new Date();
   document.getElementById('header-date').textContent =
     now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})+'  '+fmtTime(now);
-  setTimeout(updateClock, 10000);
+  setTimeout(updateClock,10000);
 }
 
 function fmtTime(d) {
   let h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM';
   h=h%12||12; return h+':'+String(m).padStart(2,'0')+' '+ap;
 }
-function fmtDue(t) {
+function fmtDueTime(t) {
   const [hh,mm]=t.split(':').map(Number),ap=hh>=12?'PM':'AM',h=hh%12||12;
-  return 'Due by '+h+':'+String(mm).padStart(2,'0')+' '+ap;
+  return h+':'+String(mm).padStart(2,'0')+' '+ap;
 }
-function isOverdue(dueTime) {
-  const now=new Date(),[hh,mm]=dueTime.split(':').map(Number),due=new Date();
+function isOverdue(timeStr) {
+  const now=new Date(),[hh,mm]=timeStr.split(':').map(Number),due=new Date();
   due.setHours(hh,mm,0,0); return now>due;
 }
 
-// ── RENDER PILLS ──────────────────────────────────────────────
+// ── MUTE ─────────────────────────────────────────────────────
+function toggleMute() {
+  muted = !muted;
+  const btn = document.getElementById('mute-btn');
+  btn.textContent = muted ? '🔕' : '🔔';
+  btn.classList.toggle('muted', muted);
+  showToast(muted ? 'Alerts muted' : 'Alerts unmuted');
+}
+
+// ── RENDER PILLS ─────────────────────────────────────────────
 function renderPills(person) {
   const wrap = document.getElementById('pills-'+person);
-  wrap.innerHTML = '';
-  const col = document.createElement('div');
-  col.style.cssText = 'display:flex;flex-direction:column;gap:12px';
-  cfg.people[person].meds.forEach(med => col.appendChild(buildCard(person, med)));
+  wrap.innerHTML='';
+  const col=document.createElement('div');
+  col.style.cssText='display:flex;flex-direction:column;gap:12px';
+  cfg.people[person].meds.forEach(med => col.appendChild(buildCard(person,med)));
   wrap.appendChild(col);
 }
 
 function buildCard(person, med) {
-  const taken   = takenState[med.id];
-  const overdue = !taken && isOverdue(med.dueTime);
+  const doses = med.doses || ["08:00"];
+
+  // Determine card-level state
+  const allTaken = doses.every((_,i) => takenState[doseKey(med.id,i)]);
+  const hasOverdue = !allTaken && doses.some((t,i) =>
+    !takenState[doseKey(med.id,i)] && !skippedState[doseKey(med.id,i)] && isOverdue(t)
+  );
+
   const card = document.createElement('div');
-  card.className = 'pill-card'+(taken?' taken':'')+(overdue?' overdue':'');
+  card.className = 'pill-card' + (allTaken?' all-taken':'') + (hasOverdue?' has-overdue':'');
   card.id = 'card-'+med.id;
 
-  const btn = document.createElement('button');
-  btn.className = 'pill-btn';
-  btn.onclick = () => takeMed(person, med.id);
-
+  // Card header
+  const hdr = document.createElement('div');
+  hdr.className = 'pill-card-header';
   const icon = document.createElement('div');
   icon.className = 'pill-icon';
-  icon.style.background = taken ? '#66bb6a' : (overdue ? '#ffa726' : med.color);
-  icon.textContent = taken ? '✓' : (overdue ? '⚠️' : '💊');
+  icon.style.background = allTaken ? '#66bb6a' : (hasOverdue ? '#ffa726' : med.color);
+  icon.textContent = allTaken ? '✓' : (hasOverdue ? '⚠️' : '💊');
+  const hinfo = document.createElement('div');
+  hinfo.className = 'pill-header-info';
+  hinfo.innerHTML = `<div class="pill-name">${med.name}</div><div class="pill-dose">${med.dose}</div>`;
+  hdr.appendChild(icon); hdr.appendChild(hinfo);
+  card.appendChild(hdr);
 
-  const info = document.createElement('div');
-  info.className = 'pill-info';
-  info.innerHTML = `
-    <div class="pill-name">${med.name}</div>
-    <div class="pill-dose">${med.dose}</div>
-    <div class="pill-time">${fmtDue(med.dueTime)}</div>
-    <div class="pill-status">${taken?'✅ Taken at '+taken.takenDisplay:(overdue?'⚠️ OVERDUE':'Tap when taken')}</div>
-  `;
-  btn.appendChild(icon); btn.appendChild(info);
-  card.appendChild(btn);
+  // Dose rows
+  const doseWrap = document.createElement('div');
+  doseWrap.className = 'dose-rows';
 
-  const undo = document.createElement('div');
-  undo.className = 'undo-strip';
-  undo.innerHTML = `<button class="undo-btn" onclick="undoMed('${person}','${med.id}')">↩ Undo</button><span class="undo-info">Mark as not taken</span>`;
-  card.appendChild(undo);
+  doses.forEach((timeStr, i) => {
+    const dk = doseKey(med.id, i);
+    const taken   = takenState[dk];
+    const skipped = skippedState[dk];
+    const overdue = !taken && !skipped && isOverdue(timeStr);
+
+    const row = document.createElement('div');
+    row.className = 'dose-row' + (taken?' taken-dose':'') + (overdue?' overdue-dose':'');
+
+    const timeLabel = document.createElement('div');
+    timeLabel.className = 'dose-time-label';
+    timeLabel.textContent = fmtDueTime(timeStr);
+
+    const status = document.createElement('div');
+    status.className = 'dose-status';
+    if(taken)        status.textContent = '✅ '+taken.takenDisplay;
+    else if(skipped) status.textContent = '— skipped';
+    else if(overdue) status.textContent = 'Overdue';
+    else             status.textContent = 'Pending';
+
+    const actions = document.createElement('div');
+    actions.className = 'dose-actions';
+
+    if(taken) {
+      // Undo button only
+      const ub = document.createElement('button');
+      ub.className='dose-undo-btn'; ub.textContent='↩ Undo';
+      ub.onclick = () => undoDose(person, med.id, i);
+      actions.appendChild(ub);
+    } else if(!skipped) {
+      // Take button
+      const tb = document.createElement('button');
+      tb.className='dose-take-btn'; tb.textContent='✓ Taken';
+      tb.onclick = () => takeDose(person, med.id, i);
+      actions.appendChild(tb);
+      // Skip button only shown when overdue
+      if(overdue) {
+        const sb = document.createElement('button');
+        sb.className='dose-skip-btn'; sb.textContent='Skip';
+        sb.onclick = () => skipDose(person, med.id, i);
+        actions.appendChild(sb);
+      }
+    }
+
+    row.appendChild(timeLabel); row.appendChild(status); row.appendChild(actions);
+    doseWrap.appendChild(row);
+  });
+
+  card.appendChild(doseWrap);
   return card;
 }
 
-// ── TAKE / UNDO ───────────────────────────────────────────────
-function takeMed(person, medId) {
-  if(takenState[medId]) return;
+// ── TAKE / UNDO / SKIP ───────────────────────────────────────
+function takeDose(person, medId, doseIdx) {
+  const dk = doseKey(medId, doseIdx);
+  if(takenState[dk]) return;
   const now=new Date(), display=fmtTime(now);
-  takenState[medId]={takenAt:now.toISOString(),takenDisplay:display};
-  saveTaken();
+  takenState[dk]={takenAt:now.toISOString(), takenDisplay:display};
+  // Clear skipped state if they take it late
+  delete skippedState[dk];
+  saveTaken(); saveSkipped();
   const med=getMed(person,medId);
   if(med.stock>0) med.stock--;
   saveCfg();
-  log.unshift({date:todayKey(),person,medName:med.name,status:'taken',time:display});
+  const doseLabel = med.doses.length>1 ? ` (dose ${doseIdx+1} of ${med.doses.length})` : '';
+  log.unshift({date:todayKey(), person, medName:med.name+doseLabel, status:'taken', time:display});
   saveLog(); renderAll();
-  sendNotification('✅ Medication Taken',`${cap(person)} took ${med.name} at ${display}.`);
+  sendNotification('✅ Medication Taken',`${cap(person)} took ${med.name}${doseLabel} at ${display}.`);
   checkRefill(person,med);
 }
 
-function undoMed(person, medId) {
-  if(!takenState[medId]) return;
+function undoDose(person, medId, doseIdx) {
+  const dk = doseKey(medId, doseIdx);
+  if(!takenState[dk]) return;
   const med=getMed(person,medId);
-  delete takenState[medId]; saveTaken();
+  delete takenState[dk]; saveTaken();
   med.stock++; saveCfg();
-  const idx=log.findIndex(l=>l.date===todayKey()&&l.medName===med.name&&l.status==='taken');
-  if(idx!==-1) log.splice(idx,1); saveLog(); renderAll();
+  const doseLabel = med.doses.length>1 ? ` (dose ${doseIdx+1} of ${med.doses.length})` : '';
+  const idx=log.findIndex(l=>l.date===todayKey()&&l.medName===med.name+doseLabel&&l.status==='taken');
+  if(idx!==-1) log.splice(idx,1); saveLog();
+  renderAll();
+}
+
+function skipDose(person, medId, doseIdx) {
+  const dk = doseKey(medId, doseIdx);
+  if(takenState[dk]) return; // already taken, can't skip
+  skippedState[dk] = true;
+  saveSkipped();
+  const med=getMed(person,medId);
+  const doseLabel = med.doses.length>1 ? ` (dose ${doseIdx+1} of ${med.doses.length})` : '';
+  const now=new Date(), display=fmtTime(now);
+  log.unshift({date:todayKey(), person, medName:med.name+doseLabel, status:'skipped', time:display});
+  saveLog();
+  // Clear the alert so it doesn't re-fire
+  alertsFired[dk] = true;
+  renderAll();
 }
 
 function getMed(person,medId) { return cfg.people[person].meds.find(m=>m.id===medId); }
 function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
 
-// ── ALERTS ────────────────────────────────────────────────────
+// ── ALERTS ───────────────────────────────────────────────────
 function checkAlerts() {
   ['bill','sue'].forEach(person => {
     cfg.people[person].meds.forEach(med => {
-      if(takenState[med.id]||alertsFired[med.id]||!isOverdue(med.dueTime)) return;
-      alertsFired[med.id]=true;
-      showModal('⚠️','Medication Overdue',`${cap(person)} has not taken ${med.name} (${med.dose}).\n${fmtDue(med.dueTime)}`);
-      sendNotification('⚠️ Missed Medication',`${cap(person)} has NOT taken ${med.name} (due ${fmtDue(med.dueTime)}).`);
+      (med.doses||["08:00"]).forEach((timeStr, i) => {
+        const dk = doseKey(med.id, i);
+        if(takenState[dk] || skippedState[dk] || alertsFired[dk] || !isOverdue(timeStr)) return;
+        alertsFired[dk] = true;
+        if(!muted) {
+          const doseLabel = (med.doses||[]).length>1 ? ` (dose ${i+1})` : '';
+          showModal('⚠️','Medication Overdue',
+            `${cap(person)} has not taken ${med.name}${doseLabel} (${med.dose}).\nDue at ${fmtDueTime(timeStr)}\n\nTap "Skip" on the card to move on.`);
+          sendNotification('⚠️ Missed Medication',
+            `${cap(person)} has NOT taken ${med.name}${doseLabel} (due ${fmtDueTime(timeStr)}).`);
+        }
+      });
     });
   });
 }
@@ -566,7 +659,7 @@ function checkRefill(person,med) {
   }
 }
 
-// ── COUNTS ────────────────────────────────────────────────────
+// ── COUNTS ───────────────────────────────────────────────────
 function renderCounts(person) {
   document.getElementById('counts-'+person).innerHTML =
     cfg.people[person].meds.map(med => {
@@ -575,7 +668,7 @@ function renderCounts(person) {
     }).join('');
 }
 
-// ── LOG DRAWER ────────────────────────────────────────────────
+// ── LOG ──────────────────────────────────────────────────────
 function openLog() { renderLog(); document.getElementById('log-overlay').classList.add('open'); }
 function closeLog(e) { if(!e||e.target===document.getElementById('log-overlay')) document.getElementById('log-overlay').classList.remove('open'); }
 function renderLog() {
@@ -583,41 +676,37 @@ function renderLog() {
   if(!log.length) { el.innerHTML='<p style="color:#aaa;padding:16px">No history yet.</p>'; return; }
   let h=`<table class="log-table"><tr><th>Date</th><th>Person</th><th>Medication</th><th>Status</th><th>Time</th></tr>`;
   log.slice(0,200).forEach(e => {
-    const cls=e.status==='taken'?'log-taken':'log-missed';
-    const lbl=e.status==='taken'?'✅ Taken':'⚠️ Missed';
+    const cls = e.status==='taken' ? 'log-taken' : e.status==='skipped' ? 'log-skipped' : 'log-missed';
+    const lbl = e.status==='taken' ? '✅ Taken' : e.status==='skipped' ? '⏭ Skipped' : '⚠️ Missed';
     h+=`<tr><td>${e.date}</td><td style="text-transform:capitalize">${e.person}</td><td>${e.medName}</td><td class="${cls}">${lbl}</td><td>${e.time||''}</td></tr>`;
   });
   el.innerHTML=h+'</table>';
 }
 function clearLog() { if(confirm('Clear all log history?')) { log=[]; saveLog(); renderLog(); } }
 
-// ── SETTINGS DRAWER ───────────────────────────────────────────
+// ── SETTINGS ─────────────────────────────────────────────────
 function openSettings() {
-  // Reset gate every time drawer is opened
-  document.getElementById('admin-gate').style.display = 'flex';
-  document.getElementById('settings-form').style.display = 'none';
-  document.getElementById('admin-pin-input').value = '';
-  document.getElementById('admin-pin-error').style.display = 'none';
+  document.getElementById('admin-gate').style.display='flex';
+  document.getElementById('settings-form').style.display='none';
+  document.getElementById('admin-pin-input').value='';
+  document.getElementById('admin-pin-error').style.display='none';
   document.getElementById('settings-overlay').classList.add('open');
 }
 function closeSettings(e) {
-  if(!e||e.target===document.getElementById('settings-overlay')) {
+  if(!e||e.target===document.getElementById('settings-overlay'))
     document.getElementById('settings-overlay').classList.remove('open');
-  }
 }
 
-// Admin PIN check
 document.getElementById('admin-pin-input').addEventListener('keydown', e => { if(e.key==='Enter') checkAdminPin(); });
 function checkAdminPin() {
-  const v = document.getElementById('admin-pin-input').value;
-  if(v === (cfg.adminPin || '0000')) {
-    document.getElementById('admin-gate').style.display = 'none';
-    document.getElementById('settings-form').style.display = 'flex';
+  if(document.getElementById('admin-pin-input').value === (cfg.adminPin||'0000')) {
+    document.getElementById('admin-gate').style.display='none';
+    document.getElementById('settings-form').style.display='flex';
     loadSettingsForm();
-    document.getElementById('admin-pin-error').style.display = 'none';
+    document.getElementById('admin-pin-error').style.display='none';
   } else {
-    document.getElementById('admin-pin-error').style.display = 'block';
-    document.getElementById('admin-pin-input').value = '';
+    document.getElementById('admin-pin-error').style.display='block';
+    document.getElementById('admin-pin-input').value='';
   }
 }
 
@@ -631,24 +720,32 @@ function loadSettingsForm() {
   buildMedSettings('sue');
 }
 
-// ── MED SETTINGS BUILDER ──────────────────────────────────────
+// ── MED SETTINGS ─────────────────────────────────────────────
 function buildMedSettings(person) {
-  const c = document.getElementById(person+'-med-settings');
-  c.innerHTML = '';
-  cfg.people[person].meds.forEach((med, i) => {
-    c.appendChild(makeMedRow(person, med, i));
-  });
+  const c=document.getElementById(person+'-med-settings');
+  c.innerHTML='';
+  cfg.people[person].meds.forEach((med,i) => c.appendChild(makeMedRow(person,med,i)));
 }
 
 function makeMedRow(person, med, i) {
-  const row = document.createElement('div');
-  row.className = 'med-editor-row';
-  row.id = `medrow-${person}-${i}`;
-  row.innerHTML = `
+  const doses = med.doses || ["08:00"];
+  const row=document.createElement('div');
+  row.className='med-editor-row';
+  row.id=`medrow-${person}-${i}`;
+
+  // Build dose time entries HTML
+  const doseTimesHtml = doses.map((t,di) => `
+    <div class="dose-time-entry" id="dte-${person}-${i}-${di}">
+      <input type="time" value="${t}" data-person="${person}" data-idx="${i}" data-doseidx="${di}" data-field="doseTime">
+      ${doses.length>1 ? `<button class="remove-dose-time-btn" onclick="removeDoseTime('${person}',${i},${di})">✕</button>` : ''}
+    </div>
+  `).join('');
+
+  row.innerHTML=`
     <div class="med-editor-top">
       <div class="med-editor-label">
         <div class="med-color-dot" style="background:${med.color}" id="dot-${person}-${i}"></div>
-        <span>${med.name||'New Medication'}</span>
+        <span id="medlabel-${person}-${i}">${med.name||'New Medication'}</span>
       </div>
       <button class="delete-med-btn" onclick="deleteMed('${person}',${i})">🗑 Delete</button>
     </div>
@@ -657,8 +754,6 @@ function makeMedRow(person, med, i) {
         oninput="liveUpdateLabel(this)"></div>
     <div class="setting-row"><label>Dose</label>
       <input type="text" data-person="${person}" data-idx="${i}" data-field="dose" value="${med.dose}"></div>
-    <div class="setting-row"><label>Due By</label>
-      <input type="time" data-person="${person}" data-idx="${i}" data-field="dueTime" value="${med.dueTime}"></div>
     <div class="setting-row"><label>Color</label>
       <input type="color" data-person="${person}" data-idx="${i}" data-field="color" value="${med.color}"
         style="width:52px;height:40px;padding:2px;border-radius:6px;cursor:pointer"
@@ -667,60 +762,95 @@ function makeMedRow(person, med, i) {
       <input type="number" data-person="${person}" data-idx="${i}" data-field="stock" value="${med.stock}" min="0" style="max-width:90px"></div>
     <div class="setting-row"><label>Refill at</label>
       <input type="number" data-person="${person}" data-idx="${i}" data-field="refillAt" value="${med.refillAt}" min="1" style="max-width:90px"></div>
+    <div class="dose-times-editor">
+      <label>⏰ Dose Times (${doses.length} per day)</label>
+      <div class="dose-time-list" id="dtl-${person}-${i}">${doseTimesHtml}</div>
+      <button class="add-dose-time-btn" onclick="addDoseTime('${person}',${i})">＋ Add another dose time</button>
+    </div>
   `;
   return row;
 }
 
 function liveUpdateLabel(inp) {
-  const {person,idx} = inp.dataset;
-  const label = document.querySelector(`#medrow-${person}-${idx} .med-editor-label span`);
-  if(label) label.textContent = inp.value || 'New Medication';
+  const {person,idx}=inp.dataset;
+  const el=document.getElementById(`medlabel-${person}-${idx}`);
+  if(el) el.textContent=inp.value||'New Medication';
 }
 function liveUpdateDot(inp) {
-  const {person,idx} = inp.dataset;
-  const dot = document.getElementById(`dot-${person}-${idx}`);
-  if(dot) dot.style.background = inp.value;
+  const {person,idx}=inp.dataset;
+  const dot=document.getElementById(`dot-${person}-${idx}`);
+  if(dot) dot.style.background=inp.value;
 }
 
-function addMed(person) {
-  const med = { id: newId(), name:'New Medication', dose:'', color:'#607d8b', dueTime:'08:00', refillAt:7, stock:30 };
-  cfg.people[person].meds.push(med);
+function addDoseTime(person, idx) {
+  // Save current state first
+  saveMedsQuiet(person);
+  cfg.people[person].meds[idx].doses.push("12:00");
   saveCfg();
   buildMedSettings(person);
-  // Scroll to the new row
-  setTimeout(() => {
-    const rows = document.querySelectorAll(`#${person}-med-settings .med-editor-row`);
-    if(rows.length) rows[rows.length-1].scrollIntoView({behavior:'smooth', block:'center'});
-  }, 100);
 }
 
-function deleteMed(person, idx) {
-  const med = cfg.people[person].meds[idx];
-  if(!confirm(`Delete ${med.name}? This cannot be undone.`)) return;
-  // Remove from taken state
-  delete takenState[med.id]; saveTaken();
-  cfg.people[person].meds.splice(idx, 1);
+function removeDoseTime(person, idx, doseIdx) {
+  saveMedsQuiet(person);
+  const doses = cfg.people[person].meds[idx].doses;
+  if(doses.length<=1) return showToast('Must have at least one dose time.');
+  doses.splice(doseIdx,1);
   saveCfg();
   buildMedSettings(person);
-  renderAll();
-  showToast(`${med.name} removed.`);
+}
+
+// Save meds silently (no toast, no re-render of pills) — used internally
+function saveMedsQuiet(person) {
+  document.querySelectorAll(`[data-person="${person}"][data-field]:not([data-field="doseTime"])`).forEach(inp => {
+    const med=cfg.people[person].meds[parseInt(inp.dataset.idx)];
+    if(!med) return;
+    const f=inp.dataset.field;
+    med[f]=(f==='stock'||f==='refillAt')?(parseInt(inp.value)||0):inp.value;
+  });
+  // Save dose times
+  document.querySelectorAll(`[data-person="${person}"][data-field="doseTime"]`).forEach(inp => {
+    const med=cfg.people[person].meds[parseInt(inp.dataset.idx)];
+    if(!med) return;
+    const di=parseInt(inp.dataset.doseidx);
+    if(med.doses[di]!==undefined) med.doses[di]=inp.value;
+  });
+  saveCfg();
 }
 
 function saveMeds(person) {
-  document.querySelectorAll(`[data-person="${person}"]`).forEach(inp => {
-    const med = cfg.people[person].meds[parseInt(inp.dataset.idx)];
-    if(!med) return;
-    const f=inp.dataset.field;
-    med[f] = (f==='stock'||f==='refillAt') ? (parseInt(inp.value)||0) : inp.value;
+  saveMedsQuiet(person);
+  renderAll();
+  showToast('Saved!');
+}
+
+function addMed(person) {
+  const med={id:newId(),name:'New Medication',dose:'',color:'#607d8b',doses:["08:00"],refillAt:7,stock:30};
+  cfg.people[person].meds.push(med);
+  saveCfg(); buildMedSettings(person);
+  setTimeout(()=>{
+    const rows=document.querySelectorAll(`#${person}-med-settings .med-editor-row`);
+    if(rows.length) rows[rows.length-1].scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
+function deleteMed(person, idx) {
+  const med=cfg.people[person].meds[idx];
+  if(!confirm(`Delete ${med.name}? This cannot be undone.`)) return;
+  (med.doses||[]).forEach((_,di)=>{
+    delete takenState[doseKey(med.id,di)];
+    delete skippedState[doseKey(med.id,di)];
   });
-  saveCfg(); renderAll(); showToast('Saved!');
+  saveTaken(); saveSkipped();
+  cfg.people[person].meds.splice(idx,1);
+  saveCfg(); buildMedSettings(person); renderAll();
+  showToast(`${med.name} removed.`);
 }
 
 function savePINs() {
-  const np  = document.getElementById('new-pin').value.trim();
-  const nap = document.getElementById('new-admin-pin').value.trim();
-  if(np)  { cfg.pin      = np;  document.getElementById('new-pin').value=''; }
-  if(nap) { cfg.adminPin = nap; document.getElementById('new-admin-pin').value=''; }
+  const np=document.getElementById('new-pin').value.trim();
+  const nap=document.getElementById('new-admin-pin').value.trim();
+  if(np)  { cfg.pin=np;      document.getElementById('new-pin').value=''; }
+  if(nap) { cfg.adminPin=nap; document.getElementById('new-admin-pin').value=''; }
   if(!np&&!nap) return showModal('⚠️','Nothing changed','Enter a new PIN in at least one field.');
   saveCfg(); showToast('PINs updated!');
 }
@@ -735,7 +865,7 @@ function saveEmailJS() {
   saveCfg(); showToast('Saved!');
 }
 
-// ── NOTIFICATIONS ─────────────────────────────────────────────
+// ── NOTIFICATIONS ────────────────────────────────────────────
 function sendNotification(subject,message) {
   const ej=cfg.emailjs;
   if(!ej.service||!ej.template||!ej.pubkey||!ej.email) return;
@@ -751,7 +881,7 @@ function doSend(subject,message) {
     .catch(err=>console.warn('EmailJS:',err));
 }
 
-// ── MODAL / TOAST ─────────────────────────────────────────────
+// ── MODAL / TOAST ────────────────────────────────────────────
 function showModal(icon,title,body) {
   document.getElementById('modal-icon').textContent=icon;
   document.getElementById('modal-title').textContent=title;
