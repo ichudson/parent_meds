@@ -406,6 +406,12 @@
         <br>
         <button class="save-btn" style="margin-top:12px" onclick="saveMeds('sue')">Save Sue's Meds</button>
       </div>
+
+      <div class="settings-section">
+        <h3>⬇ Publish Changes</h3>
+        <p style="font-size:0.85rem;color:#888;margin-bottom:12px">Download a fresh index.html with the current medication setup built in, then upload it to GitHub Pages.</p>
+        <button class="save-btn" onclick="downloadUpdatedHTML()">Download index.html</button>
+      </div>
     </div>
   </div>
 </div>
@@ -424,20 +430,24 @@
 // ── DEFAULT CONFIG ───────────────────────────────────────────
 // doses: array of time strings e.g. ["08:00","13:00","21:00"]
 const DEFAULT_CONFIG = {
+  configVersion: 2026060902,
   pin: "1234", adminPin: "0000",
   emailjs: { service:"", template:"", pubkey:"", email:"" },
   people: {
     bill: { meds: [
-      { id:"b1", name:"Lisinopril",   dose:"10mg",  color:"#e53935", doses:["08:00"],         refillAt:7, stock:30 },
-      { id:"b2", name:"Metformin",    dose:"500mg", color:"#1976d2", doses:["08:00","21:00"],  refillAt:7, stock:60 },
-      { id:"b3", name:"Atorvastatin", dose:"20mg",  color:"#7b1fa2", doses:["21:00"],          refillAt:7, stock:30 }
+      { id:"b1", name:"Escitalopram oxalate (Lexapro)", dose:"10 mg orally daily", color:"#e53935", doses:["11:00"],         refillAt:7, stock:30 },
+      { id:"b2", name:"Losartan",                        dose:"25 mg orally daily", color:"#1976d2", doses:["11:00"],         refillAt:7, stock:30 },
+      { id:"b3", name:"Omeprazole",                      dose:"40 mg orally twice a day", color:"#7b1fa2", doses:["11:00","18:00"], refillAt:7, stock:60 },
+      { id:"b4", name:"Spironolactone",                  dose:"25 mg orally daily", color:"#00897b", doses:["11:00"],         refillAt:7, stock:30 },
+      { id:"b5", name:"Tamsulosin",                      dose:"0.4 mg orally daily", color:"#f57c00", doses:["11:00"],         refillAt:7, stock:30 }
     ]},
     sue: { meds: [
-      { id:"s1", name:"Amlodipine",    dose:"5mg",   color:"#00897b", doses:["08:00"],         refillAt:7, stock:30 },
-      { id:"s2", name:"Levothyroxine", dose:"50mcg", color:"#f57c00", doses:["07:00"],          refillAt:7, stock:30 }
+      { id:"s1", name:"Brimonidine-timolol", dose:"0.2-0.5%, 1 drop in right eye twice a day", color:"#00897b", doses:["11:00","18:00"], refillAt:7, stock:30 },
+      { id:"s2", name:"Lumigan (bimatoprost ophthalmic solution)", dose:"0.01%, 1 drop in right eye", color:"#f57c00", doses:["18:00"], refillAt:7, stock:30 }
     ]}
   }
 };
+const ORIGINAL_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 
 // ── STATE ────────────────────────────────────────────────────
 let cfg        = loadCfg();
@@ -449,8 +459,15 @@ let muted      = false;
 let alertInterval;
 let activeDayKey = todayKey();
 
-function loadCfg()     { try { return JSON.parse(localStorage.getItem('medcfg')) || cloneDefaultConfig(); } catch(e) { return cloneDefaultConfig(); } }
-function saveCfg()     { localStorage.setItem('medcfg', JSON.stringify(cfg)); }
+function loadCfg()     {
+  try {
+    const saved = JSON.parse(localStorage.getItem('medcfg'));
+    const defaults = cloneDefaultConfig();
+    if(!saved) return defaults;
+    return (Number(saved.configVersion)||0) >= (Number(defaults.configVersion)||0) ? saved : defaults;
+  } catch(e) { return cloneDefaultConfig(); }
+}
+function saveCfg()     { if(!cfg.configVersion) cfg.configVersion = DEFAULT_CONFIG.configVersion; localStorage.setItem('medcfg', JSON.stringify(cfg)); }
 function loadTaken()   { try { return JSON.parse(localStorage.getItem('medtaken_'+todayKey()))   || {}; } catch(e) { return {}; } }
 function saveTaken()   { localStorage.setItem('medtaken_'+todayKey(),   JSON.stringify(takenState)); }
 function loadSkipped() { try { return JSON.parse(localStorage.getItem('medskipped_'+todayKey())) || {}; } catch(e) { return {}; } }
@@ -993,6 +1010,48 @@ function saveEmailJS() {
     email:    document.getElementById('ej-email').value.trim()
   };
   saveCfg(); showToast('Saved!');
+}
+
+function collectSettingsFormValues() {
+  if(document.getElementById('settings-form').style.display !== 'flex') return;
+  saveMedsQuiet('bill');
+  saveMedsQuiet('sue');
+  cfg.emailjs={
+    service:  document.getElementById('ej-service').value.trim(),
+    template: document.getElementById('ej-template').value.trim(),
+    pubkey:   document.getElementById('ej-pubkey').value.trim(),
+    email:    document.getElementById('ej-email').value.trim()
+  };
+  const np=document.getElementById('new-pin').value.trim();
+  const nap=document.getElementById('new-admin-pin').value.trim();
+  if(np) cfg.pin=np;
+  if(nap) cfg.adminPin=nap;
+}
+
+function downloadUpdatedHTML() {
+  collectSettingsFormValues();
+  cfg.configVersion = Date.now();
+  saveCfg();
+  const exportedConfig = JSON.stringify(cfg, null, 2).replace(/<\/script/gi,'<\\/script');
+  const replacement =
+    'const DEFAULT_CONFIG = ' + exportedConfig + ';\n' +
+    "const ORIGINAL_HTML = '<!DOCTYPE html>\\n' + document.documentElement.outerHTML;\n\n" +
+    '// ── STATE';
+  const html = ORIGINAL_HTML.replace(/const DEFAULT_CONFIG = [\s\S]*?;\nconst ORIGINAL_HTML = [\s\S]*?;\n\n\/\/ ── STATE/, replacement);
+  if(html === ORIGINAL_HTML) {
+    showModal('⚠️','Download failed','The page could not build a fresh index.html. Please ask Ian to update it manually.');
+    return;
+  }
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showModal('✅','index.html downloaded','Upload this downloaded index.html file to GitHub Pages to publish the current medication setup.');
 }
 
 // ── NOTIFICATIONS ────────────────────────────────────────────
